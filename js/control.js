@@ -22,7 +22,20 @@
 
   $('brand').textContent = cfg.TITLE || 'Pick & Ban';
   document.title = 'Control — ' + (cfg.TITLE || 'Pick & Ban');
-  $('preview').src = 'overlay.html?bg=1' + (local ? '&local=1' : '');
+  // Overlay preview: switch between the draft overlay and the screen-share overlay.
+  const previewSrc = {
+    overlay: 'overlay.html?bg=1',
+    screens: 'screens.html?bg=1&guides=1',     // guides mark where the screen shares go
+  };
+  function showPreview(view) {
+    $('preview').src = previewSrc[view] + (local ? '&local=1' : '');
+    document.querySelectorAll('#preview-switch button').forEach((b) => b.classList.toggle('on', b.dataset.view === view));
+  }
+  $('preview-switch').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-view]');
+    if (b && !b.classList.contains('on')) showPreview(b.dataset.view);
+  });
+  showPreview('overlay');
 
   function toast(msg, ok) {
     const t = $('toast');
@@ -278,8 +291,12 @@
       } catch (e) { toast('Could not load captain links: ' + e.message); return; }
     }
     const cap = (t) => `${base}?team=${t}${keys[t] ? '&key=' + encodeURIComponent(keys[t]) : ''}${extra}`;
+    const q = (s) => (s || local) ? '?' + [s, local && 'local=1'].filter(Boolean).join('&') : '';
     const rows = [
-      ['Overlay', base + 'overlay.html' + (local ? '?local=1' : '')],
+      ['Overlay', base + 'overlay.html' + q()],
+      ['Screens', base + 'screens.html' + q()],
+      ['Screens S1', base + 'screens.html' + q('stage=1')],
+      ['Screens S2', base + 'screens.html' + q('stage=2')],
       ['Captain A', cap('A')],
       ['Captain B', cap('B')],
     ];

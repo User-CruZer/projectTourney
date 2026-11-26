@@ -20,7 +20,8 @@ To change the order, edit `FORMAT` in `js/draft-core.js` **and** in `apps-script
 
 | Link | For |
 |---|---|
-| `overlay.html` | OBS / TikTok Live Studio browser source (1920×1080) |
+| `overlay.html` | Draft overlay: OBS / TikTok Live Studio browser source (1920×1080) |
+| `screens.html` | Gameplay overlay with two screen-share windows (see below) |
 | `index.html?admin=<ADMIN_KEY>` | Organizer: coin toss, scores, perma bans, undo/reset; can act for either player |
 | `index.html?team=A&key=…` / `?team=B&key=…` | Each player: ban/pick on their own turn only |
 
@@ -29,6 +30,21 @@ The admin panel lists the overlay and captain links, each with a copy button. `A
 ### Adding the overlay to OBS
 Sources → **+** → **Browser** → URL = your `…/overlay.html`, Width **1920**, Height **1080**.
 The background is transparent. Add `?bg=1` to the URL to get a solid background instead.
+
+### Screen-share overlay (`screens.html`)
+This overlay is for the gameplay part, with both players' shared screens side by side. It has two transparent 16:9 windows, with name plates and total scores above them and each player's ban, picks and stage scores below.
+
+In OBS, add the browser source **above** the two screen captures and set its **Width 1920 and Height 1080** in Properties. OBS defaults new Browser sources to 800×600, which leaves empty bars around the overlay. Then size and position each capture to fill its window:
+
+| Window | X | Y | Width | Height |
+|---|---|---|---|---|
+| Player A (left) | 24 | 128 | 924 | 520 |
+| Player B (right) | 972 | 128 | 924 | 520 |
+
+Tip: in OBS, open a capture's **Edit Transform** (Ctrl+E) and type the numbers in. URL options:
+- `?stage=1` / `?stage=2`: show only that stage's team, larger. Handy as one OBS scene per stage.
+- `?guides=1`: fill the windows with striped guides while you line the captures up.
+- `?bg=1`: solid background for previewing.
 
 ### TikTok Live Studio
 Add a **Link** (web) source with the overlay URL and size it to fill the 16:9 canvas.
@@ -46,6 +62,9 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 
 ## Deploy to GitHub Pages
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
+
+## After changing CSS or JS files
+The HTML pages load every CSS/JS file with a version tag (`?v=20261126b`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127a`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
 - Title, roster, elements and portraits: `js/config.js` (add `img: 'assets/…png'` to show a portrait instead of initials).

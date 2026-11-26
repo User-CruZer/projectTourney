@@ -81,12 +81,15 @@ body.bg {
 .none { color: var(--muted); font-size: 24px; }
 
 /* ---------- top row: players, bans, status ---------- */
-.row.top { display: grid; grid-template-columns: 1fr 300px 330px 300px 1fr; gap: 22px; }
-.player { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 30px; }
+.row.top { display: grid; grid-template-columns: 1fr 260px 280px 260px 1fr; gap: 22px; }
+.player { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 28px; }
+/* Font size is fitted by js/overlay.js (shrinks, then wraps to 2 lines for long names). */
 .pname {
-  font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 46px;
-  text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; min-width: 0; max-height: 96px;
+  font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 46px; line-height: 1.05;
+  text-transform: uppercase; white-space: nowrap; overflow: hidden; overflow-wrap: anywhere;
 }
+.ptotal { flex: none; }
 .player.A .pname { color: #a9c9ff; }
 .player.B .pname { color: #ffb3c1; text-align: right; }
 .ptotal { display: flex; flex-direction: column; align-items: center; line-height: 1; }
@@ -102,7 +105,7 @@ body.bg {
 .ban .ban-label { color: var(--ban); }
 
 .status { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.05; }
-.s-team { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 34px; text-transform: uppercase; max-width: 330px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-team { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.05; text-transform: uppercase; width: 280px; max-height: 72px; white-space: nowrap; overflow: hidden; overflow-wrap: anywhere; }
 .s-team.A { color: var(--a); } .s-team.B { color: var(--b); }
 .s-action { font-size: 28px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
 .s-timer { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
@@ -168,12 +171,12 @@ body.bg {
   border: 10px solid rgba(255,255,255,.85);
   box-shadow: inset 0 0 40px rgba(0,0,0,.35), 0 0 60px rgba(255,255,255,.15);
 }
-.face span { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.face span { display: block; width: 240px; max-height: 200px; overflow: hidden; overflow-wrap: anywhere; }
 .face.A { background: radial-gradient(circle at 35% 30%, #7fb2ff, var(--a) 55%, #1c4fa8); }
 .face.B { background: radial-gradient(circle at 35% 30%, #ff9db0, var(--b) 55%, #a3203b); transform: rotateY(180deg); }
 .coin-caption { text-align: center; opacity: 0; transition: opacity .4s; }
 .coin-caption.show { opacity: 1; }
-.coin-caption .win { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 60px; text-transform: uppercase; }
+.coin-caption .win { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 60px; text-transform: uppercase; max-width: 1600px; white-space: nowrap; overflow: hidden; }
 .coin-caption .sub { font-size: 34px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
 @keyframes spin { from { transform: rotateY(0deg); } to { transform: rotateY(var(--end)); } }
 @keyframes fade-in { from { opacity: 0; } }

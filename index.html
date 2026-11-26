@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20261126b" />
 </head>
 <body>
   <header class="topbar">
@@ -47,7 +47,13 @@
 
     <aside class="side">
       <section class="card preview">
-        <h2>Stream overlay preview</h2>
+        <div class="preview-head">
+          <h2>Stream overlay preview</h2>
+          <div class="seg" id="preview-switch">
+            <button class="on" data-view="overlay">Draft</button>
+            <button data-view="screens">Screens</button>
+          </div>
+        </div>
         <div class="preview-frame"><iframe id="preview" title="Overlay preview" tabindex="-1"></iframe></div>
       </section>
 
@@ -109,10 +115,10 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="js/config.js"></script>
-  <script src="js/draft-core.js"></script>
-  <script src="js/backend.js"></script>
-  <script src="js/common.js"></script>
-  <script src="js/control.js"></script>
+  <script src="js/config.js?v=20261126b"></script>
+  <script src="js/draft-core.js?v=20261126b"></script>
+  <script src="js/backend.js?v=20261126b"></script>
+  <script src="js/common.js?v=20261126b"></script>
+  <script src="js/control.js?v=20261126b"></script>
 </body>
 </html>

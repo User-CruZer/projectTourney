@@ -1,5 +1,5 @@
 (function () {
-  const { cfg, esc, initials, elColor, byName, scoreTotal, timerText } = HW;
+  const { cfg, esc, initials, elColor, byName, scoreTotal, timerText, fitText } = HW;
   const backend = createBackend(cfg);
   const $ = (id) => document.getElementById(id);
 
@@ -7,17 +7,18 @@
   $('title').textContent = cfg.TITLE || 'Pick & Ban';
   document.title = 'Overlay — ' + (cfg.TITLE || 'Pick & Ban');
 
-  // ----- keep the 1920x1080 canvas fitted to the window
-  function fit() {
-    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
-    $('stage').style.setProperty('--s', s);
-  }
-  addEventListener('resize', fit);
-  fit();
+  HW.fitCanvas($('stage'));
 
   let state = null;
   let clockOffset = 0;
   let seenFlip = null;
+
+  function fitNames() {
+    fitText($('name-A'), 46, 20, 2);
+    fitText($('name-B'), 46, 20, 2);
+    fitText($('s-team'), 34, 16, 2);
+    document.querySelectorAll('.ban-name').forEach((el) => fitText(el, 36, 20));
+  }
 
   const mono = (name) => {
     const c = byName[name];
@@ -81,6 +82,7 @@
       team.textContent = s.teams[step.team];
       action.textContent = step.type === 'ban' ? 'Ban' : `Pick · Stage ${step.stage}`;
     }
+    fitNames();
     tick();
   }
 
@@ -106,6 +108,9 @@
     void coin.offsetWidth;                                    // restart animation
     coin.style.setProperty('--end', (360 * 6 + (s.firstTeam === 'B' ? 180 : 0)) + 'deg');
     coin.classList.add('spin');
+    fitText($('coin-A'), 42, 16, 3);
+    fitText($('coin-B'), 42, 16, 3);
+    fitText(cap.querySelector('.win'), 60, 28);
     coinTimers.push(setTimeout(() => cap.classList.add('show'), 2600));
     coinTimers.push(setTimeout(() => layer.classList.add('out'), 6200));
     coinTimers.push(setTimeout(() => { layer.hidden = true; }, 6700));
@@ -122,5 +127,7 @@
   }
 
   backend.subscribe(onState);
+  // Re-fit once the web fonts have loaded (sizes differ from the fallback font).
+  if (document.fonts) document.fonts.ready.then(() => state && render());
   setInterval(() => state && tick(), 250);
 })();

@@ -33,5 +33,54 @@
     return { text: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, low: left <= 10 };
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText };
+  /**
+   * Shrinks an element's font until its text fits its box. With lines > 1 it
+   * then lets the text wrap (starting a bit bigger again) before shrinking further.
+   */
+  function fitText(el, max, min, lines = 1) {
+    const mh = parseFloat(getComputedStyle(el).maxHeight);
+    const maxH = isFinite(mh) ? mh : Infinity;     // boxes without max-height only care about width
+    const over = () => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > maxH + 1;
+    el.style.overflowWrap = 'normal';              // prefer shrinking over breaking words
+    const shrink = (from, floor) => {
+      let size = from;
+      el.style.fontSize = size + 'px';
+      while (size > floor && over()) el.style.fontSize = (size -= 2) + 'px';
+    };
+    el.style.whiteSpace = 'nowrap';
+    // One line, but don't go much smaller than ~70% before trying to wrap instead.
+    shrink(max, lines > 1 ? Math.max(min, Math.round(max * 0.7)) : min);
+    if (lines > 1 && over()) {
+      el.style.whiteSpace = 'normal';
+      shrink(Math.round(max * 0.8), min);
+      // Last resort for one giant word: allow breaking inside it.
+      if (over()) { el.style.overflowWrap = 'anywhere'; shrink(Math.round(max * 0.8), min); }
+    }
+  }
+
+  /** Keeps a fixed 1920x1080 .stage element scaled to fit the window (letterboxed). */
+  function fitCanvas(stage) {
+    let warn = null;
+    const fit = () => {
+      stage.style.setProperty('--s', Math.min(innerWidth / 1920, innerHeight / 1080));
+      // Inside OBS (window.obsstudio exists) a non-16:9 Browser source leaves empty
+      // bars — OBS defaults new Browser sources to 800x600. Say how to fix it.
+      const wrong = global.obsstudio && Math.abs(innerWidth / innerHeight - 16 / 9) > 0.02;
+      if (wrong && !warn) {
+        warn = document.createElement('div');
+        warn.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99;padding:10px 14px;' +
+          'background:#b3122e;color:#fff;font:600 16px/1.3 sans-serif;text-align:center';
+        document.body.appendChild(warn);
+      }
+      if (warn) {
+        warn.hidden = !wrong;
+        warn.textContent = `This Browser source is ${innerWidth}×${innerHeight}. ` +
+          'Open its Properties and set Width 1920 and Height 1080 so the overlay fills the screen.';
+      }
+    };
+    addEventListener('resize', fit);
+    fit();
+  }
+
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas };
 })(window);
