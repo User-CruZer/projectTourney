@@ -345,6 +345,18 @@
     if (bad.length) return toast('Scores must be numbers, e.g. 12500 or 12,500.');
     if (await send({ op: 'setScores', A1: v('s-A1'), A2: v('s-A2'), B1: v('s-B1'), B2: v('s-B2') }, 'Scores saved')) clean('s-A1', 's-A2', 's-B1', 's-B2');
   });
+  // Enter in the score boxes, one stage at a time: player 1's box ⏎ → player 2's box (same stage) ⏎ → saved.
+  // Enter on an empty box also saves.
+  const SCORE_NEXT = { 's-A1': 's-B1', 's-B1': null, 's-A2': 's-B2', 's-B2': null };
+  if (!HOLO) Object.keys(SCORE_NEXT).forEach((id) => $(id).addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    e.stopPropagation();   // this Enter is for the scores, never the page-wide "Enter = lock in" shortcut
+    const next = SCORE_NEXT[id];
+    if (!$(id).value.trim() || !next) { $(id).blur(); $('save-scores').click(); return; }
+    $(next).focus();
+    $(next).select();
+  }));
   $('perma-edit').addEventListener('click', () => {
     permaDraft = new Set(state.permaBans);
     selected = null;
