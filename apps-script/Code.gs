@@ -27,7 +27,7 @@ const FORMAT = [
 
 // Testing switch: false = anyone with the link can do everything (no admin/captain keys).
 // Set back to true before the real tournament, then deploy a new version.
-const REQUIRE_KEYS = false;
+const REQUIRE_KEYS = true;
 
 const UNIQUE_PICKS = false;  // false = both players may pick the same resonator (mirror picks)
 const CACHE_KEY = 'draft-state-v2';

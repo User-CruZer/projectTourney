@@ -20,10 +20,24 @@ Both players may pick the same resonator (mirror picks), but nobody can pick the
 **Perma bans** are set by the admin. Those resonators can't be banned or picked by anyone.
 To change the order, edit `FORMAT` in `js/draft-core.js` **and** in `apps-script/Code.gs`.
 
-## Access (testing vs tournament)
-Right now **open access is on** (`REQUIRE_KEYS = false` in `apps-script/Code.gs`). Anyone with the control page link can do everything (draft, scores, bracket) without a key, and the badge shows "Admin · open access".
+## Access (keys)
+**Keys are on** (`REQUIRE_KEYS = true` in `apps-script/Code.gs`, live since Apps Script version 9). Changing anything needs a key; watching doesn't.
 
-**Before the real tournament**, set `REQUIRE_KEYS = true` in the Apps Script and deploy a new version. The keys below are then required again. This matters because the Apps Script URL is visible in `js/config.js`, so anyone could otherwise change your data.
+| Link | Can do |
+|---|---|
+| `index.html?admin=<ADMIN_KEY>` | Everything: coin toss, picks for both sides, scores, perma bans, undo/reset, bracket |
+| `index.html?team=A&key=<TEAM_A_KEY>` / `?team=B&key=<TEAM_B_KEY>` | That side's bans and picks, only on their turn |
+| `index.html` (no key) | View only |
+| `overlay.html`, `screens.html`, `bracket.html` | Display only, no key needed (OBS / TikTok) |
+
+How to get in:
+1. Open the Google Sheet → **Meta** tab → copy the value next to `ADMIN_KEY`.
+2. Open `https://<your site>/index.html?admin=<that value>` and bookmark it. The badge shows **Admin**.
+3. In the admin panel's **Links** section, copy the **Captain A** / **Captain B** links (keys already filled in) and send them to the top / bottom player of the match.
+
+Keep the admin link and the Sheet private (Sheet sharing: **Restricted**). The captain keys belong to the sides, not to people, so the same links work for every match. To stop old links working, delete `TEAM_A_KEY` / `TEAM_B_KEY` (or `ADMIN_KEY`) in **Apps Script → Project Settings → Script Properties**, run `setup` once, and copy the new values from the Meta tab.
+
+To go back to open access for testing: set `REQUIRE_KEYS = false` and deploy a new version.
 
 ## Links
 
