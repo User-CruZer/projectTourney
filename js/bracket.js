@@ -8,6 +8,7 @@
   $('title').textContent = cfg.TITLE || 'Pick & Ban';
   document.title = 'Bracket — ' + (cfg.TITLE || 'Pick & Ban');
   HW.fitCanvas($('stage'));
+  HW.backdrop($('stage'));
 
   const ROUND_NAMES = cfg.ROUND_NAMES || ['Round of 16', 'Quarterfinal', 'Semifinal', 'Final', 'Champion'];
 

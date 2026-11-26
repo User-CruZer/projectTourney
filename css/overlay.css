@@ -6,6 +6,8 @@ html, body {
   font-family: var(--font);
 }
 body.bg { background: var(--bg); }
+/* canvas background (js/common.js backdrop): behind everything on the stage */
+.backdrop { position: absolute; left: 0; top: 0; z-index: -1; pointer-events: none; }
 
 /* Fixed 1920x1080 canvas, scaled to fit the window (letterboxed). */
 .stage {

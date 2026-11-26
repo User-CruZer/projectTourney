@@ -8,6 +8,7 @@
   document.title = 'Overlay — ' + (cfg.TITLE || 'Pick & Ban');
 
   HW.fitCanvas($('stage'));
+  HW.backdrop($('stage'));
 
   let state = null;
   let clockOffset = 0;

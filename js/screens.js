@@ -11,6 +11,7 @@
   $('title').textContent = cfg.TITLE || 'Pick & Ban';
   $('stage-tag').textContent = only ? `Stage ${only}` : 'VS';
   HW.fitCanvas($('stage'));
+  HW.backdrop($('stage'), [[24, 128, 924, 520], [972, 128, 924, 520]]);   // the two screen-share windows stay clear
 
   let state = null;
   let clockOffset = 0;

@@ -1,7 +1,7 @@
 # projectTourney: HoloWastes Pick & Ban
 Tournament helper for Wuthering Waves: a live pick & ban system with a 16:9 stream overlay.
 
-- **`overlay.html`**: 1920×1080 overlay with a transparent background, for OBS or TikTok Live Studio. Display only.
+- **`overlay.html`**: 1920×1080 overlay for OBS or TikTok Live Studio. Display only.
 - **`index.html`**: the control page, where the admin and captains run the coin toss, bans, picks and scores.
 - The live state lives in a **Google Sheet**, accessed through a Google Apps Script web app. Every page polls it about every 2 seconds.
 
@@ -38,7 +38,7 @@ The admin panel lists the overlay and captain links, each with a copy button. `A
 
 ### Adding the overlay to OBS
 Sources → **+** → **Browser** → URL = your `…/overlay.html`, Width **1920**, Height **1080**.
-The background is transparent. Add `?bg=1` to the URL to get a solid background instead.
+Every overlay has a dark background: grey in the middle fading to black at the edges (on the screens overlay the two screen-share windows stay see-through). Add `?bg=0` to the URL for a fully transparent overlay instead, for example to put it over your own background image in OBS.
 
 ### Screen-share overlay (`screens.html`)
 This overlay is for the gameplay part, with both players' shared screens side by side. It has two transparent 16:9 windows, with name plates and total scores above them and each player's ban, picks and stage scores below.
@@ -53,7 +53,7 @@ In OBS, add the browser source **above** the two screen captures and set its **W
 Tip: in OBS, open a capture's **Edit Transform** (Ctrl+E) and type the numbers in. URL options:
 - `?stage=1` / `?stage=2`: show only that stage's team, larger. Handy as one OBS scene per stage.
 - `?guides=1`: fill the windows with striped guides while you line the captures up.
-- `?bg=1`: solid background for previewing.
+- `?bg=0`: no background (fully transparent apart from the panels).
 
 ### Bracket (`bracket.html`)
 This is a 16-player single-elimination bracket (Penyisihan → Perempat Final → Semifinal → Final → Juara) that fills itself in as results are confirmed. Add it in OBS as a Browser source at 1920×1080.
@@ -96,7 +96,7 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
 
 ## After changing CSS or JS files
-The HTML pages load every CSS/JS file with a version tag (`?v=20261127j`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127j`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
+The HTML pages load every CSS/JS file with a version tag (`?v=20261127k`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127k`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
 - Title, roster and elements: `js/config.js`.

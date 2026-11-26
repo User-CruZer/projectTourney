@@ -168,6 +168,22 @@
     fit();
   }
 
+  /**
+   * Background of the 1920x1080 canvas: grey in the middle fading to black at the edges.
+   * holes = [[x, y, w, h], …] are left see-through (the screen-share windows).
+   * ?bg=0 turns it off (fully transparent overlay, as before).
+   */
+  function backdrop(stage, holes = []) {
+    if (new URLSearchParams(location.search).get('bg') === '0') return;
+    const r = (x, y, w, h) => `M${x} ${y}h${w}v${h}h${-w}Z`;
+    stage.insertAdjacentHTML('afterbegin',
+      '<svg class="backdrop" width="1920" height="1080" viewBox="0 0 1920 1080" aria-hidden="true">' +
+      '<defs><radialGradient id="bd-grad" cx="50%" cy="50%" r="75%">' +
+      '<stop offset="0" stop-color="#3a3a3a"/><stop offset=".45" stop-color="#1c1c1c"/><stop offset="1" stop-color="#030303"/>' +
+      '</radialGradient></defs>' +
+      `<path fill="url(#bd-grad)" fill-rule="evenodd" d="${r(0, 0, 1920, 1080)}${holes.map((h) => r(...h)).join('')}"/></svg>`);
+  }
+
   // Demo mode (?local=1) keeps data only in this browser — make that impossible to miss,
   // so nobody runs the real match (or an OBS source) on practice data by accident.
   if (!cfg.API_URL && global.self === global.top) {   // not inside the control page's preview
@@ -188,5 +204,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas, coinToss, slug, portrait, imagesReady, IMG_DIR };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas, backdrop, coinToss, slug, portrait, imagesReady, IMG_DIR };
 })(window);
