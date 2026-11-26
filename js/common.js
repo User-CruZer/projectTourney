@@ -268,6 +268,9 @@
         <div class="done-line"></div></div>`;
       const WAIT = 1300;                       // let the last lock-in animation play first
       timers.push(setTimeout(() => {
+        // The last pick's lock-in has played by now. Drop its .fresh class, or the browser restarts that
+        // lock-in when .draft-done is taken off again (it looked like the pick locked in twice).
+        stage.querySelectorAll('.fresh').forEach((n) => n.classList.remove('fresh'));
         stage.classList.remove('draft-done'); void stage.offsetWidth; stage.classList.add('draft-done');
         el.hidden = false; el.classList.remove('out'); void el.offsetWidth; el.classList.add('show');
         el.querySelectorAll('.done-vs span').forEach((n) => fitText(n, 44, 20));
