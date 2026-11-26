@@ -62,7 +62,7 @@
         box.innerHTML = `
           <div class="stage-head">
             <span class="stage-name">Stage ${stage}</span>
-            <span class="stage-score"><small>Score</small>${score !== '' ? esc(scoreTotal([score]) || score) : '–'}</span>
+            <span class="stage-score"><small>Score</small><span data-sk="${t}${stage}">${score !== '' ? esc(scoreTotal([score]) || score) : '–'}</span></span>
           </div>
           <div class="slots">${steps.map((i) => {
             const a = i >= 0 ? s.actions[i] : null;
@@ -99,17 +99,21 @@
 
   // Coin toss animation (shared with the screens overlay)
   const coin = HW.coinToss();
+  const draftDone = HW.draftComplete();   // DRAFT COMPLETE moment after the last lock-in
 
   function onState(next) {
     state = next;
     if (next.now) clockOffset = next.now - Date.now();
     coin(next, clockOffset);
+    draftDone(next);
     // Animate only an action that was just locked in (not old picks on page load).
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;
     render();
     freshIdx = -1;
+    scoreAnim.play(scoreAnim.changes(next.scores));   // a score just entered: count up + pop
   }
+  const scoreAnim = HW.scoreWatcher();
 
   backend.subscribe(onState);
   // Re-fit once the web fonts have loaded (sizes differ from the fallback font).

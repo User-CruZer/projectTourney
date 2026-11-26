@@ -1,7 +1,18 @@
 /*
  * Tournament configuration — edit this file.
  */
+(function () {
+// Which tournament this page belongs to. Hologram pages set window.HW_MODE = 'hologram'
+// before loading this file; every other page is Whimpering Wastes.
+const MODE = window.HW_MODE === 'hologram' ? 'hologram' : 'wastes';
+const DEMO = new URLSearchParams(location.search).get('local') === '1';
+
+// Hologram: paste the Hologram Apps Script Web App URL here (ends with /exec).
+// Empty = the Hologram pages run in demo mode (data only in this browser).
+const HOLO_API_URL = 'https://script.google.com/macros/s/AKfycbyLwqGgH95Sv9uJXD4SRhJMtrWvl1EIfBvpNK-TJTg6OcwKLbtOmKzNYhjRb7A1-IYz/exec';
+
 window.TOURNEY_CONFIG = {
+  MODE,
   TITLE: 'HoloWastes',
   // Logo shown instead of the title text on every page. Remove this line to show TITLE as text.
   LOGO: 'img/logo.png',
@@ -16,8 +27,22 @@ window.TOURNEY_CONFIG = {
 
   // Paste your Google Apps Script Web App URL here (ends with /exec).
   // Leave empty to run in LOCAL DEMO MODE (syncs only between tabs of one browser).
-  API_URL: new URLSearchParams(location.search).get('local') === '1' ? '' :
+  // Whimpering Wastes uses the URL below; Hologram uses HOLO_API_URL above.
+  API_URL: DEMO ? '' : MODE === 'hologram' ? HOLO_API_URL :
     'https://script.google.com/macros/s/AKfycbzyAhdNhqwz0Pqp0Ra0G20Dc8zOJemlcvkid81ABQAXKr-ZkGEnE8_rC1ze8ZzFI54mOw/exec',
+  HOLO_API_URL,
+
+  // Hologram: boss pool. Each match rolls 3 different bosses from this list.
+  HOLO_BOSSES: [
+    'Inferno Rider', 'Fleurdelys', 'The False Sovereign', 'Lioness of Glory',
+    'Lady of the Sea', 'Fallacy of No Return', 'Sigillum', 'Myriad Snare',
+  ],
+  // Hologram: starting bracket players, in bracket order (1 vs 2, 3 vs 4, …).
+  // WILD CARD = open slot; replace the name if someone joins, or give the opponent a bye.
+  HOLO_PLAYERS: [
+    'MOCHIEL', 'SHAN', 'YOIDERA', 'KENL', 'WILD CARD', 'VELL', 'WIZZNU', 'RYUU ZUKI',
+    'LEONAR', 'WILD CARD', 'LESIL', 'FUKASA', 'ALPHA', 'WEZEN', 'PIYUTO', 'QING GIAO',
+  ],
 
   // Column titles on the bracket overlay (round of 16, quarterfinal, semifinal, final, champion).
   ROUND_NAMES: ['Penyisihan', 'Perempat Final', 'Semifinal', 'Final', 'Juara'],
@@ -109,3 +134,4 @@ window.TOURNEY_CONFIG = {
     { name: 'Suisui', element: 'Glacio' },
   ],
 };
+})();

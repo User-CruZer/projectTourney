@@ -12,6 +12,15 @@
   // let: becomes 'admin' for everyone (without ?team=) when the server has open access (testing).
   let role = adminKey ? 'admin' : team ? 'team' : 'viewer';
   const local = params.get('local') === '1';
+  // Hologram uses this same control page (hologram.html); js/holo-admin.js adds bosses + points.
+  const HOLO = cfg.MODE === 'hologram';
+
+  // Top navigation: the current page's link keeps this URL (key included); the other tournament
+  // opens without a key (each has its own), but stays in demo mode when this page is in demo mode.
+  document.querySelectorAll('#topnav a').forEach((a) => {
+    if (a.classList.contains('here')) a.href = location.pathname.split('/').pop() + location.search;
+    else if (local && !a.classList.contains('home')) a.href += '?local=1';
+  });
 
   let state = null;
   let clockOffset = 0;
@@ -22,12 +31,13 @@
   let permaDraft = null;          // Set while editing perma bans, else null
 
   HW.brand($('brand'));
-  document.title = 'Control — ' + (cfg.TITLE || 'Pick & Ban');
+  document.title = (HOLO ? 'Hologram' : 'Whimpering Wastes') + ' — Control — ' + (cfg.TITLE || 'Pick & Ban');
   // Overlay preview: switch between the draft overlay and the screen-share overlay.
+  const pre = HOLO ? 'holo-' : '';
   const previewSrc = {
-    overlay: 'overlay.html?bg=1',
-    screens: 'screens.html?bg=1&guides=1',     // guides mark where the screen shares go
-    bracket: 'bracket.html?bg=1',
+    overlay: pre + 'overlay.html?bg=1',
+    screens: pre + 'screens.html?bg=1&guides=1',     // guides mark where the screen shares go
+    bracket: pre + 'bracket.html?bg=1',
   };
   function showPreview(view) {
     // Unique URL each time so the browser never shows a stale cached copy of the page.
@@ -75,7 +85,7 @@
       tl.className = 'turn-label ' + step.team;
       tl.textContent = step.type === 'ban'
         ? `${s.teams[step.team]} bans`
-        : `${s.teams[step.team]} picks · Stage ${step.stage}`;
+        : `${s.teams[step.team]} picks` + (HOLO ? '' : ` · Stage ${step.stage}`);
     }
     $('turn-step').textContent = step ? `Step ${s.actions.length + 1} / ${s.sequence.length}` : '';
     $('coin-info').innerHTML = s.firstTeam ? `Coin toss: <b>${esc(s.teams[s.firstTeam])}</b> goes first` : '';
@@ -85,6 +95,7 @@
     renderLockBar();
     renderAdmin();
     tick();
+    window.dispatchEvent(new CustomEvent('hw-state', { detail: s }));   // js/holo-admin.js listens
   }
 
   function renderRoster() {
@@ -139,8 +150,8 @@
         ? `${me} ${bans} <b>${esc(selected)}</b> → ${opp} can't use it`
         : `${me} ${bans} next: choose a resonator ${opp} can't use`)
       : (selected
-        ? `${me} ${picks} <b>${esc(selected)}</b> for Stage ${step.stage}`
-        : `${me} ${picks} next: choose a resonator for Stage ${step.stage}`);
+        ? `${me} ${picks} <b>${esc(selected)}</b> ${HOLO ? 'for the team' : `for Stage ${step.stage}`}`
+        : `${me} ${picks} next: choose a resonator ${HOLO ? 'for the team' : `for Stage ${step.stage}`}`);
   }
 
   const fillIfIdle = (el, v) => { if (document.activeElement !== el && !el.dataset.dirty) el.value = v; };
@@ -152,14 +163,18 @@
     $('bracket-card').hidden = false;
     fillIfIdle($('name-a'), s.teams.A);
     fillIfIdle($('name-b'), s.teams.B);
-    $('score-label-A').textContent = s.teams.A;
-    $('score-label-B').textContent = s.teams.B;
-    [['A', 0, 's-A1'], ['A', 1, 's-A2'], ['B', 0, 's-B1'], ['B', 1, 's-B2']].forEach(([t, i, id]) => fillIfIdle($(id), s.scores[t][i]));
+    if (!HOLO) {   // Whimpering Wastes stage scores (Hologram points: js/holo-admin.js)
+      $('score-label-A').textContent = s.teams.A;
+      $('score-label-B').textContent = s.teams.B;
+      [['A', 0, 's-A1'], ['A', 1, 's-A2'], ['B', 0, 's-B1'], ['B', 1, 's-B2']].forEach(([t, i, id]) => fillIfIdle($(id), s.scores[t][i]));
+    }
 
     const flip = $('flip-btn');
-    flip.disabled = s.actions.length > 0 || busy;
+    const needBosses = HOLO && (!s.bosses || s.bosses.length !== 3);   // Hologram: roll the bosses before the toss
+    flip.disabled = s.actions.length > 0 || busy || needBosses;
     if (!flip.dataset.armed) flip.textContent = s.firstTeam ? 'Flip again' : 'Flip coin';
-    $('flip-hint').textContent = s.actions.length
+    $('flip-hint').textContent = needBosses ? 'Roll the bosses first'
+      : s.actions.length
       ? 'Locked — draft has started (reset to flip again)'
       : s.firstTeam ? `${s.teams[s.firstTeam]} won the toss` : 'Decides who bans & picks first';
     $('undo-btn').disabled = !s.actions.length || busy;
@@ -316,7 +331,7 @@
   $('save-names').addEventListener('click', async () => {
     if (await send({ op: 'setTeams', A: $('name-a').value.trim(), B: $('name-b').value.trim() }, 'Names saved')) clean('name-a', 'name-b');
   });
-  $('save-scores').addEventListener('click', async () => {
+  if (!HOLO) $('save-scores').addEventListener('click', async () => {
     const v = (id) => $(id).value.trim();
     const bad = ['s-A1', 's-A2', 's-B1', 's-B2'].filter((id) => v(id) !== '' && !isFinite(Number(v(id).replace(/[,\s]/g, ''))));
     if (bad.length) return toast('Scores must be numbers, e.g. 12500 or 12,500.');
@@ -341,7 +356,7 @@
 
   async function buildAdminLinks() {
     if (role !== 'admin') return;
-    const base = location.origin + location.pathname.replace(/index\.html$/, '');
+    const base = location.origin + location.pathname.replace(/[^/]*$/, '');   // folder of this page
     const extra = local ? '&local=1' : '';
     let keys = { A: '', B: '' };
     if (backend.mode === 'sheets') {
@@ -352,14 +367,20 @@
         keys = data.keys;
       } catch (e) { toast('Could not load captain links: ' + e.message); return; }
     }
-    const cap = (t) => `${base}?team=${t}${keys[t] ? '&key=' + encodeURIComponent(keys[t]) : ''}${extra}`;
+    const cap = (t) => `${base}${HOLO ? 'hologram' : 'wastes'}.html?team=${t}${keys[t] ? '&key=' + encodeURIComponent(keys[t]) : ''}${extra}`;
     const q = (s) => (s || local) ? '?' + [s, local && 'local=1'].filter(Boolean).join('&') : '';
     const rows = [
-      ['Overlay', base + 'overlay.html' + q()],
-      ['Screens', base + 'screens.html' + q()],
-      ['Screens S1', base + 'screens.html' + q('stage=1')],
-      ['Screens S2', base + 'screens.html' + q('stage=2')],
-      ['Bracket', base + 'bracket.html' + q()],
+      ...(HOLO ? [
+        ['Overlay', base + 'holo-overlay.html' + q()],
+        ['Screens', base + 'holo-screens.html' + q()],
+        ['Bracket', base + 'holo-bracket.html' + q()],
+      ] : [
+        ['Overlay', base + 'overlay.html' + q()],
+        ['Screens', base + 'screens.html' + q()],
+        ['Screens S1', base + 'screens.html' + q('stage=1')],
+        ['Screens S2', base + 'screens.html' + q('stage=2')],
+        ['Bracket', base + 'bracket.html' + q()],
+      ]),
       ['Captain A', cap('A')],
       ['Captain B', cap('B')],
     ];
@@ -488,7 +509,7 @@
     send({ op: 'confirmWinner' }, 'Winner confirmed — bracket updated').then((ok) => { if (ok) { bkSelected = null; renderBracketAdmin(); } });
   });
   $('bk-load').addEventListener('click', (e) => {
-    const inProgress = state.actions.length || state.firstTeam || ['A', 'B'].some((t) => state.scores[t].some((v) => v !== ''));
+    const inProgress = state.actions.length || state.firstTeam || ['A', 'B'].some((t) => state.scores[t].some((v) => v !== '' && v !== '0'));
     // Loading replaces the current draft, so ask for a second tap if one is in progress.
     if (inProgress && !armed(e.currentTarget, 'Tap again — replaces current draft')) return;
     send({ op: 'loadMatch', id: bkSelected }, 'Match loaded — ready for the coin toss');
@@ -511,6 +532,9 @@
   $('bk-reset').addEventListener('click', (e) => {
     if (armed(e.currentTarget, 'Tap again to reset bracket')) send({ op: 'resetBracket' }, 'Bracket reset').then((ok) => { if (ok) { bkSelected = null; renderBracketAdmin(); } });
   });
+  // For js/holo-admin.js (Hologram bosses + points).
+  window.HWControl = { send, toast, armed, isAdmin: () => role === 'admin', isBusy: () => busy, getState: () => state };
+
   renderFilters();
   HW.imagesReady.then(() => state && renderRoster());   // show portraits once found
   backend.subscribe(setState);

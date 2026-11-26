@@ -6,7 +6,7 @@
 
   if (new URLSearchParams(location.search).get('bg') === '1') document.body.classList.add('bg');
   HW.brand($('title'));
-  document.title = 'Bracket — ' + (cfg.TITLE || 'Pick & Ban');
+  document.title = (cfg.MODE === 'hologram' ? 'Hologram Bracket — ' : 'Bracket — ') + (cfg.TITLE || 'Pick & Ban');
   HW.fitCanvas($('stage'));
   HW.backdrop($('stage'));
 
@@ -25,11 +25,21 @@
     for (let j = 0; j < centers[c - 1].length / 2; j++) centers[c].push((centers[c - 1][2 * j] + centers[c - 1][2 * j + 1]) / 2);
   }
 
+  // Matches whose winner was just set (animated once; not on page load, not for undo/clear).
+  let prevResults = null;
+  let fresh = [];
+  function newResults(b) {
+    const res = b.results || {};
+    const out = prevResults ? Object.keys(res).filter((id) => !prevResults[id] || prevResults[id].w !== res[id].w) : [];
+    prevResults = JSON.parse(JSON.stringify(res));
+    return out;
+  }
+
   /** Display info for box j in column c (c = 4 is the champion). */
   function boxInfo(b, c, j) {
     if (c === 4) {
       const champ = B.champion(b);
-      return { name: champ, cls: 'champ' + (champ ? ' win' : ' empty') };
+      return { name: champ, cls: 'champ' + (champ ? ' win' : ' empty') + (champ && fresh.indexOf(B.mid(3, 0)) >= 0 ? ' crowned' : '') };
     }
     const name = c === 0 ? (b.players[j] || '') : B.winner(b, c - 1, j);
     const matchId = B.mid(c, Math.floor(j / 2));
@@ -37,8 +47,10 @@
     const res = b.results[matchId];
     let cls = name ? '' : 'empty';
     let score = '';
+    if (c > 0 && name && fresh.indexOf(B.mid(c - 1, j)) >= 0) cls += ' arrive';   // the winner moving up into this slot
     if (res) {
       cls += res.w === side ? ' win' : ' lose';
+      if (fresh.indexOf(matchId) >= 0) cls += res.w === side ? ' just-won' : ' just-lost';
       const sc = side === 'A' ? res.sa : res.sb;
       if (sc !== null && sc !== undefined && sc !== '') score = scoreTotal([sc]) || String(sc);
     } else if (b.current === matchId && name) {
@@ -70,9 +82,10 @@
         const x1 = colX(c) + W, xm = x1 + GAP / 2, x2 = colX(c + 1);
         const yA = centers[c][2 * m], yB = centers[c][2 * m + 1], yT = centers[c + 1][m];
         const res = b.results[B.mid(c, m)];
-        const cls = (side) => (res && res.w === side ? 'won' : '') + (c === 3 ? ' final' : '');
-        const pathA = `<path class="${cls('A')}" d="M${x1} ${yA} H${xm} V${yT} H${x2}"/>`;
-        const pathB = `<path class="${cls('B')}" d="M${x1} ${yB} H${xm} V${yT} H${x2}"/>`;
+        const draw = res && fresh.indexOf(B.mid(c, m)) >= 0;   // just won: the line draws itself to the next round
+        const cls = (side) => (res && res.w === side ? 'won' + (draw ? ' draw' : '') : '') + (c === 3 ? ' final' : '');
+        const pathA = `<path class="${cls('A')}" pathLength="1" d="M${x1} ${yA} H${xm} V${yT} H${x2}"/>`;
+        const pathB = `<path class="${cls('B')}" pathLength="1" d="M${x1} ${yB} H${xm} V${yT} H${x2}"/>`;
         paths += res && res.w === 'A' ? pathB + pathA : pathA + pathB;   // winner's line drawn on top
       }
     }
@@ -80,6 +93,38 @@
     $('cols').innerHTML = html;
     $('links').innerHTML = paths;
     document.querySelectorAll('.box .nm').forEach((el) => fitText(el, el.closest('.champ') ? 40 : 26, 14));
+  }
+
+  // ----- big "X wins" banner over the bracket; the final gets a champion banner + confetti
+  let bannerTimer = null;
+  function celebrate(b, id) {
+    const p = B.parse(id), res = b.results[id];
+    if (!p || !res) return;
+    const name = B.participants(b, p.r, p.i)[res.w === 'A' ? 0 : 1];
+    if (!name) return;
+    const final = p.r === B.ROUNDS - 1;
+    let el = $('win-banner');
+    if (!el) { el = document.createElement('div'); el.id = 'win-banner'; $('stage').appendChild(el); }
+    el.className = 'win-banner' + (final ? ' champion' : '');
+    el.innerHTML = `
+      <div class="wb-kicker">${esc(ROUND_NAMES[p.r])} · M${p.i + 1}</div>
+      ${final ? '<div class="wb-trophy">🏆</div>' : ''}
+      <div class="wb-name">${esc(name)}</div>
+      <div class="wb-sub">${final ? 'Champion' : 'Wins · advances to ' + esc(ROUND_NAMES[p.r + 1])}</div>`;
+    fitText(el.querySelector('.wb-name'), final ? 110 : 84, 36);
+    if (final) {
+      let conf = '';
+      for (let k = 0; k < 90; k++) {
+        const hue = ['var(--gold)', '#fff6d6', '#f2f2f2', '#c9a227', 'var(--b)'][k % 5];
+        conf += `<i style="left:${Math.random() * 100}%;background:${hue};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;` +
+          `animation-duration:${(2.6 + Math.random() * 2).toFixed(2)}s;--rot:${Math.round(Math.random() * 720 - 360)}deg;--dx:${Math.round(Math.random() * 160 - 80)}px"></i>`;
+      }
+      el.insertAdjacentHTML('beforeend', `<div class="confetti">${conf}</div>`);
+    }
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => el.classList.remove('show'), final ? 7000 : 3600);
   }
 
   // ----- "Live now" panel + "Up next" list (?live=0 hides them)
@@ -96,6 +141,8 @@
         ? { key: 'res', text: `${w} is the champion!`, sub: 'Final result', progress: 1, result: true }
         : { key: 'res', text: `${w} wins`, sub: `Advances to ${ROUND_NAMES[cur.r + 1]}`, progress: 1, result: true };
     }
+    // Hologram: the 3 bosses are rolled before the coin toss.
+    if (Array.isArray(s.bosses) && s.bosses.length < 3 && !s.firstTeam) return { key: 'bosses', text: 'Rolling bosses', sub: 'Getting ready', progress: 0 };
     if (!s.firstTeam) return { key: 'toss', text: 'Coin toss', sub: 'Getting ready', progress: 0 };
     const step = DraftCore.currentStep(s);
     const n = s.actions.length, total = s.sequence.length;
@@ -170,8 +217,8 @@
       panel.innerHTML = `
         <div class="lp-head"><span class="lp-dot"></span><span class="lp-round">${ph.result ? 'Result' : 'Live now'} · ${esc(ROUND_NAMES[cur.r])} M${cur.i + 1}</span></div>
         <div class="lp-vs">
-          <div class="lp-p A${won('A')}"><span class="nm">${esc(pp[0])}</span><b>${esc(tot('A'))}</b></div>
-          <div class="lp-p B${won('B')}"><span class="nm">${esc(pp[1])}</span><b>${esc(tot('B'))}</b></div>
+          <div class="lp-p A${won('A')}"><span class="nm">${esc(pp[0])}</span><b data-sk="TA">${esc(tot('A'))}</b></div>
+          <div class="lp-p B${won('B')}"><span class="nm">${esc(pp[1])}</span><b data-sk="TB">${esc(tot('B'))}</b></div>
         </div>
         <div class="lp-text${ph.side ? ' ' + ph.side : ''}">${esc(ph.text)}</div>
         <div class="lp-sub">${esc(ph.sub)}</div>
@@ -209,11 +256,17 @@
 
   let last = null;
   let lastBreak = '';
+  const scoreAnim = HW.scoreWatcher();
   backend.subscribe((s) => {
     last = s;
     if (s.now) clockOffset = s.now - Date.now();
     lastBreak = breakPhase(s);
+    const b = s.bracket || B.emptyBracket();
+    fresh = newResults(b);
     render(s); renderLive(s);
+    scoreAnim.play(scoreAnim.changes(s.scores));   // a score / point just entered: count up + pop (live panel)
+    if (fresh.length) celebrate(b, fresh[fresh.length - 1]);   // usually one; on several, the latest
+    fresh = [];   // re-draws later (fonts) don't replay it
   });
   // Tick the break countdown; redraw the panel when it starts, ends or hides.
   setInterval(() => {

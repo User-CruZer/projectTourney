@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hologram — Control — HoloWastes</title>
+  <script>window.HW_MODE = 'hologram';</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/theme.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/style.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/reels.css?v=20261128z2" />
+</head>
+<body class="control">
+  <header class="topbar">
+    <div class="brand"><span id="brand">HoloWastes</span> <em>Hologram control</em></div>
+    <nav class="topnav" id="topnav">
+      <a class="home" href="index.html">&larr; Home</a>
+      <a class="holo here" href="hologram.html" aria-current="page">Hologram</a>
+      <a class="wastes" href="wastes.html">Whimpering Wastes</a>
+    </nav>
+    <div class="topbar-right">
+      <span id="role-badge" class="badge"></span>
+      <span id="conn" class="conn"><i></i><b>Connecting…</b></span>
+    </div>
+  </header>
+
+  <section class="statusbar">
+    <div class="turn-label" id="turn-label">—</div>
+    <div class="turn-meta"><span id="turn-step"></span><span id="timer"></span></div>
+    <div class="coin-info" id="coin-info"></div>
+  </section>
+
+  <main class="layout">
+    <div class="main-col">
+    <section class="card picker">
+      <div class="picker-head">
+        <h2 id="picker-title">Resonators</h2>
+        <div class="tools">
+          <div class="chips" id="element-filter"></div>
+          <input id="search" type="search" placeholder="Search…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="perma-edit-bar" id="perma-bar" hidden>
+        <span>Editing perma bans — click resonators to toggle, then save.</span>
+        <button id="perma-save" class="primary">Save perma bans</button>
+        <button id="perma-cancel">Cancel</button>
+      </div>
+      <div class="roster" id="roster"></div>
+      <div class="lock-bar" id="lock-bar" hidden>
+        <div class="lock-info" id="lock-info"></div>
+        <button id="lock-btn" class="lock-btn" disabled>Lock in</button>
+      </div>
+    </section>
+
+    <section class="card admin bracket-card" id="bracket-card" hidden>
+      <div class="card-head">
+        <h2>Bracket</h2>
+        <div class="row">
+          <span class="hint">Back to Penyisihan (keeps players)</span>
+          <button id="bk-reset" class="danger">Reset bracket</button>
+        </div>
+      </div>
+      <div class="bk-grid">
+        <div class="bk-col">
+          <div class="bk-sub first">Now playing</div>
+          <div class="bk-now" id="bk-now"></div>
+          <div class="row">
+            <button id="bk-confirm" class="primary">Confirm winner</button>
+            <span class="hint" id="bk-confirm-hint"></span>
+          </div>
+
+          <div class="bk-sub">Any match</div>
+          <div class="row"><select id="bk-match"></select></div>
+          <div class="row">
+            <button id="bk-load" class="primary">Load into draft</button>
+            <button id="bk-win-A">Top wins</button>
+            <button id="bk-win-B">Bottom wins</button>
+            <button id="bk-clear" class="danger">Clear result</button>
+          </div>
+        </div>
+
+        <div class="bk-col">
+          <details class="bk-details" open>
+            <summary>Players (16)</summary>
+            <div class="bk-players" id="bk-players"></div>
+            <div class="row"><button id="bk-save-players" class="primary">Save players</button></div>
+          </details>
+
+          <details class="bk-details">
+            <summary>Fix mistakes</summary>
+            <div class="row"><button id="bk-undo">Undo last bracket change</button></div>
+            <div class="hint" id="bk-last"></div>
+            <div class="hint">Every bracket change is also logged in the Sheet's "BracketLog" tab, and the "Bracket" tab shows the current bracket.</div>
+          </details>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <aside class="side">
+      <section class="card preview">
+        <div class="preview-head">
+          <h2>Stream preview</h2>
+          <div class="seg" id="preview-switch">
+            <button class="on" data-view="overlay">Draft</button>
+            <button data-view="screens">Screens</button>
+            <button data-view="bracket">Bracket</button>
+          </div>
+        </div>
+        <div class="preview-frame"><iframe id="preview" title="Overlay preview" tabindex="-1"></iframe></div>
+      </section>
+
+      <section class="card admin" id="admin" hidden>
+        <h2>Admin</h2>
+
+        <div class="group">
+          <h3>Bosses</h3>
+          <div class="boss-list" id="boss-list"></div>
+          <div class="row">
+            <button id="boss-roll" class="primary">Roll bosses</button>
+            <button id="boss-manual">Pick by hand</button>
+            <span class="hint" id="boss-hint"></span>
+          </div>
+          <div class="boss-manual" id="boss-manual-box" hidden>
+            <div class="row"><select id="boss-1"></select><select id="boss-2"></select><select id="boss-3"></select></div>
+            <div class="row"><button id="boss-save" class="primary">Save bosses</button><button id="boss-cancel">Cancel</button></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Coin toss</h3>
+          <div class="row">
+            <button id="flip-btn" class="primary">Flip coin</button>
+            <span class="hint" id="flip-hint"></span>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Players</h3>
+          <div class="row">
+            <input id="name-a" placeholder="Player A" maxlength="40" />
+            <input id="name-b" placeholder="Player B" maxlength="40" />
+            <button id="save-names">Save</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Points</h3>
+          <div class="points-grid" id="points-grid"></div>
+          <div class="hint" id="points-hint">Tick a box to give that player the boss's point. Saved right away.</div>
+        </div>
+
+        <div class="group">
+          <h3>Break timer</h3>
+          <div class="row">
+            <button data-break="180">3 min</button>
+            <button data-break="300">5 min</button>
+            <button data-break="600">10 min</button>
+            <input id="break-time" class="break-time" placeholder="Custom, e.g. 7 or 4:30" maxlength="8" />
+            <button id="break-start" class="primary">Start</button>
+          </div>
+          <div class="row">
+            <input id="break-label" placeholder="Label (optional), e.g. Break · Ishoma" maxlength="40" />
+            <button id="break-add" disabled>+1 min</button>
+            <button id="break-stop" class="danger" disabled>Stop</button>
+          </div>
+          <div class="hint" id="break-status">Shows a countdown on the bracket overlay.</div>
+        </div>
+
+        <div class="group">
+          <h3>Perma bans</h3>
+          <div class="row">
+            <button id="perma-edit">Edit perma bans</button>
+            <span class="hint" id="perma-count"></span>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Draft</h3>
+          <div class="row">
+            <button id="undo-btn">Undo last</button>
+            <button id="reset-btn" class="danger">Reset match</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Links</h3>
+          <div class="links" id="admin-links"></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="js/config.js?v=20261128z2"></script>
+  <script src="js/bracket-core.js?v=20261128z2"></script>
+  <script src="js/holo-core.js?v=20261128z2"></script>
+  <script src="js/backend.js?v=20261128z2"></script>
+  <script src="js/common.js?v=20261128z2"></script>
+  <script src="js/control.js?v=20261128z2"></script>
+  <script src="js/holo-admin.js?v=20261128z2"></script>
+</body>
+</html>

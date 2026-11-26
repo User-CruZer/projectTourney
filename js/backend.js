@@ -46,12 +46,20 @@
 
     // version = "<counter>:<hash>". A poll that started before a save can answer after it
     // with the older state; skip it, or the page would briefly jump back (and replay animations).
+    // Same counter but different content is either a manual edit in the Sheet, or a read taken in the middle
+    // of a save / an out-of-date cached copy (which made a new pick show, vanish and lock in a second time).
+    // Such a state is only shown once a second read agrees with it.
     let lastCounter = -1;
+    let pending = null;
     function emit(state) {
-      if (state.version === lastVersion) return;
+      if (state.version === lastVersion) { pending = null; return; }
       const counter = parseInt(String(state.version), 10);
-      if (isFinite(counter) && counter < lastCounter) return;
-      if (isFinite(counter)) lastCounter = counter;
+      if (isFinite(counter)) {
+        if (counter < lastCounter) return;
+        if (counter === lastCounter && pending !== state.version) { pending = state.version; return; }
+        lastCounter = counter;
+      }
+      pending = null;
       lastVersion = state.version;
       listeners.forEach((cb) => cb(state));
     }
@@ -78,12 +86,14 @@
       }
     }
 
-    return { mode: 'sheets', getState, send, subscribe };
+    // _listen / _receive: for tests (tests/backend.test.js) — add a listener without polling, feed a read in by hand.
+    return { mode: 'sheets', getState, send, subscribe, _listen: (cb) => listeners.push(cb), _receive: emit };
   }
 
   /* ---------- Local demo (localStorage, syncs across tabs) ---------- */
-  function localBackend() {
-    const KEY = 'projectTourney.draft';
+  function localBackend(cfg) {
+    const KEYS = storageKeys(cfg);
+    const KEY = KEYS.draft;
     let listeners = [];
 
     function read() {
@@ -103,7 +113,7 @@
     }
 
     // Bracket undo history: [{ time, log, snapshot }] (newest last), like the Sheet's BracketLog tab.
-    const LOG_KEY = 'projectTourney.bracketLog';
+    const LOG_KEY = KEYS.log;
     function undoLog() {
       try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (_) { return []; }
     }
@@ -155,5 +165,12 @@
     return { mode: 'local', getState, send, subscribe };
   }
 
-  global.createBackend = (cfg) => (cfg.API_URL ? remoteBackend(cfg) : localBackend());
+  /** Demo-mode localStorage keys; Hologram keeps its own so it never overwrites the Whimpering Wastes demo. */
+  function storageKeys(cfg) {
+    const p = cfg && cfg.MODE === 'hologram' ? 'projectTourney.hologram.' : 'projectTourney.';
+    return { draft: p + 'draft', log: p + 'bracketLog' };
+  }
+
+  global.createBackend = (cfg) => (cfg.API_URL ? remoteBackend(cfg) : localBackend(cfg));
+  global.createBackend.storageKeys = storageKeys;
 })(window);

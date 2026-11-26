@@ -28,6 +28,7 @@
   let lastCount = null;   // number of actions at the previous update
   let freshIdx = -1;      // index of a just-locked action (gets the lock-in animation)
   const coin = HW.coinToss();   // same coin toss animation as the draft overlay
+  const draftDone = HW.draftComplete();   // DRAFT COMPLETE moment after the last lock-in
 
   // Portrait from img/resonator-img (see js/common.js), or coloured initials if there is none.
   const mono = (name) => {
@@ -77,7 +78,7 @@
           return `<div class="stage-row">
             <div class="row-label">Stage<b>${stage}</b></div>
             <div class="row-picks">${picks}</div>
-            <div class="row-score"><span>Score</span><b>${score !== '' ? esc(scoreTotal([score]) || score) : '–'}</b></div>
+            <div class="row-score"><span>Score</span><b data-sk="${t}${stage}">${score !== '' ? esc(scoreTotal([score]) || score) : '–'}</b></div>
           </div>`;
         }).join('')}</div>`;
     });
@@ -87,15 +88,18 @@
     document.querySelectorAll('.pick .nm').forEach((el) => fitText(el, only ? 38 : 18, only ? 16 : 11, only ? 2 : 1));
   }
 
+  const scoreAnim = HW.scoreWatcher();
   backend.subscribe((next) => {
     state = next;
     if (next.now) clockOffset = next.now - Date.now();
     coin(next, clockOffset);
+    draftDone(next);
     // Animate only an action that was just locked in (not old picks on page load).
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;
     render();
     freshIdx = -1;
+    scoreAnim.play(scoreAnim.changes(next.scores));   // a score just entered: count up + pop
   });
   HW.imagesReady.then(() => state && render());   // redraw once portraits are found
   if (document.fonts) {

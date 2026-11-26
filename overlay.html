@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/theme.css?v=20261127u" />
-  <link rel="stylesheet" href="css/overlay.css?v=20261127u" />
+  <link rel="stylesheet" href="css/theme.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/overlay.css?v=20261128z2" />
 </head>
 <!--
   OBS / TikTok Live Studio: add as a Browser / Link source at 1920 x 1080.
@@ -24,7 +24,7 @@
     </section>
 
     <section class="row top">
-      <div class="panel player A"><div class="pname" id="name-A"></div><div class="ptotal"><span>Total</span><b id="total-A"></b></div></div>
+      <div class="panel player A"><div class="pname" id="name-A"></div><div class="ptotal"><span>Total</span><b id="total-A" data-sk="TA"></b></div></div>
       <div class="panel ban A" id="ban-A"></div>
       <div class="status" id="status">
         <div class="s-team" id="s-team"></div>
@@ -32,7 +32,7 @@
         <div class="s-timer" id="s-timer"></div>
       </div>
       <div class="panel ban B" id="ban-B"></div>
-      <div class="panel player B"><div class="ptotal"><span>Total</span><b id="total-B"></b></div><div class="pname" id="name-B"></div></div>
+      <div class="panel player B"><div class="ptotal"><span>Total</span><b id="total-B" data-sk="TB"></b></div><div class="pname" id="name-B"></div></div>
     </section>
 
     <section class="row stages">
@@ -43,21 +43,14 @@
       <div class="panel stage-box A" id="stage-A-2"></div>
       <div class="panel stage-box B" id="stage-B-2"></div>
     </section>
-
-    <div class="coin-layer" id="coin-layer" hidden>
-      <div class="coin" id="coin">
-        <div class="face A"><span id="coin-A"></span></div>
-        <div class="face B"><span id="coin-B"></span></div>
-      </div>
-      <div class="coin-caption" id="coin-caption"></div>
-    </div>
+    <!-- the coin toss layer is added by HW.coinToss() in js/common.js (same on every draft overlay) -->
   </div>
 
-  <script src="js/config.js?v=20261127u"></script>
-  <script src="js/bracket-core.js?v=20261127u"></script>
-  <script src="js/draft-core.js?v=20261127u"></script>
-  <script src="js/backend.js?v=20261127u"></script>
-  <script src="js/common.js?v=20261127u"></script>
-  <script src="js/overlay.js?v=20261127u"></script>
+  <script src="js/config.js?v=20261128z2"></script>
+  <script src="js/bracket-core.js?v=20261128z2"></script>
+  <script src="js/draft-core.js?v=20261128z2"></script>
+  <script src="js/backend.js?v=20261128z2"></script>
+  <script src="js/common.js?v=20261128z2"></script>
+  <script src="js/overlay.js?v=20261128z2"></script>
 </body>
 </html>

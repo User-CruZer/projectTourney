@@ -3,188 +3,61 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Control — HoloWastes</title>
+  <title>HoloWastes</title>
+  <script>
+    // Old Whimpering Wastes links (index.html?admin=… / ?team=…&key=… / ?local=1) keep working:
+    // they are forwarded to the Whimpering Wastes control page with the same query.
+    function hwForward(search) {
+      const q = new URLSearchParams(search);
+      return ['admin', 'team', 'key', 'local'].some((k) => q.has(k)) ? 'wastes.html?' + q.toString() : null;
+    }
+    const hwTarget = hwForward(location.search);
+    if (hwTarget) location.replace(hwTarget);
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/theme.css?v=20261127u" />
-  <link rel="stylesheet" href="css/style.css?v=20261127u" />
+  <link rel="stylesheet" href="css/theme.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/chooser.css?v=20261128z2" />
 </head>
-<body class="control">
-  <header class="topbar">
-    <div class="brand"><span id="brand">HoloWastes</span> <em>Pick &amp; Ban control</em></div>
-    <div class="topbar-right">
-      <span id="role-badge" class="badge"></span>
-      <span id="conn" class="conn"><i></i><b>Connecting…</b></span>
+<!-- Start page: pick the tournament. -->
+<body class="chooser">
+  <main>
+    <img class="chooser-logo" src="img/logo.png" alt="HoloWastes Tournament" />
+    <p class="chooser-lead">Choose a tournament</p>
+    <div class="choices">
+      <a class="choice holo" href="hologram.html" data-page="hologram.html" data-name="Hologram">
+        <span class="kicker">Tactical Hologram</span>
+        <b>Hologram</b>
+        <span class="desc">3 random bosses · 1 team of 3 · points per boss</span>
+        <span class="go">Enter →</span>
+      </a>
+      <a class="choice wastes" href="wastes.html" data-page="wastes.html" data-name="Whimpering Wastes">
+        <span class="kicker">Pick &amp; ban</span>
+        <b>Whimpering Wastes</b>
+        <span class="desc">2 stages · 3 picks each per stage · higher total wins</span>
+        <span class="go">Enter →</span>
+      </a>
     </div>
-  </header>
-
-  <section class="statusbar">
-    <div class="turn-label" id="turn-label">—</div>
-    <div class="turn-meta"><span id="turn-step"></span><span id="timer"></span></div>
-    <div class="coin-info" id="coin-info"></div>
-  </section>
-
-  <main class="layout">
-    <div class="main-col">
-    <section class="card picker">
-      <div class="picker-head">
-        <h2 id="picker-title">Resonators</h2>
-        <div class="tools">
-          <div class="chips" id="element-filter"></div>
-          <input id="search" type="search" placeholder="Search…" autocomplete="off" />
-        </div>
-      </div>
-      <div class="perma-edit-bar" id="perma-bar" hidden>
-        <span>Editing perma bans — click resonators to toggle, then save.</span>
-        <button id="perma-save" class="primary">Save perma bans</button>
-        <button id="perma-cancel">Cancel</button>
-      </div>
-      <div class="roster" id="roster"></div>
-      <div class="lock-bar" id="lock-bar" hidden>
-        <div class="lock-info" id="lock-info"></div>
-        <button id="lock-btn" class="lock-btn" disabled>Lock in</button>
-      </div>
-    </section>
-
-    <section class="card admin bracket-card" id="bracket-card" hidden>
-      <div class="card-head">
-        <h2>Bracket</h2>
-        <div class="row">
-          <span class="hint">Back to Penyisihan (keeps players)</span>
-          <button id="bk-reset" class="danger">Reset bracket</button>
-        </div>
-      </div>
-      <div class="bk-grid">
-        <div class="bk-col">
-          <div class="bk-sub first">Now playing</div>
-          <div class="bk-now" id="bk-now"></div>
-          <div class="row">
-            <button id="bk-confirm" class="primary">Confirm winner</button>
-            <span class="hint" id="bk-confirm-hint"></span>
-          </div>
-
-          <div class="bk-sub">Any match</div>
-          <div class="row"><select id="bk-match"></select></div>
-          <div class="row">
-            <button id="bk-load">Load into draft</button>
-            <button id="bk-win-A">Top wins</button>
-            <button id="bk-win-B">Bottom wins</button>
-            <button id="bk-clear" class="danger">Clear result</button>
-          </div>
-        </div>
-
-        <div class="bk-col">
-          <details class="bk-details" open>
-            <summary>Players (16)</summary>
-            <div class="bk-players" id="bk-players"></div>
-            <div class="row"><button id="bk-save-players" class="primary">Save players</button></div>
-          </details>
-
-          <details class="bk-details">
-            <summary>Fix mistakes</summary>
-            <div class="row"><button id="bk-undo">Undo last bracket change</button></div>
-            <div class="hint" id="bk-last"></div>
-            <div class="hint">Every bracket change is also logged in the Sheet's "BracketLog" tab, and the "Bracket" tab shows the current bracket.</div>
-          </details>
-        </div>
-      </div>
-    </section>
-    </div>
-
-    <aside class="side">
-      <section class="card preview">
-        <div class="preview-head">
-          <h2>Stream preview</h2>
-          <div class="seg" id="preview-switch">
-            <button class="on" data-view="overlay">Draft</button>
-            <button data-view="screens">Screens</button>
-            <button data-view="bracket">Bracket</button>
-          </div>
-        </div>
-        <div class="preview-frame"><iframe id="preview" title="Overlay preview" tabindex="-1"></iframe></div>
-      </section>
-
-      <section class="card admin" id="admin" hidden>
-        <h2>Admin</h2>
-
-        <div class="group">
-          <h3>Coin toss</h3>
-          <div class="row">
-            <button id="flip-btn" class="primary">Flip coin</button>
-            <span class="hint" id="flip-hint"></span>
-          </div>
-        </div>
-
-        <div class="group">
-          <h3>Players</h3>
-          <div class="row">
-            <input id="name-a" placeholder="Player A" maxlength="40" />
-            <input id="name-b" placeholder="Player B" maxlength="40" />
-            <button id="save-names">Save</button>
-          </div>
-        </div>
-
-        <div class="group">
-          <h3>Scores</h3>
-          <div class="score-grid">
-            <span></span><span class="col">Stage 1</span><span class="col">Stage 2</span>
-            <span class="who A" id="score-label-A">Player A</span>
-            <input id="s-A1" inputmode="decimal" maxlength="12" /><input id="s-A2" inputmode="decimal" maxlength="12" />
-            <span class="who B" id="score-label-B">Player B</span>
-            <input id="s-B1" inputmode="decimal" maxlength="12" /><input id="s-B2" inputmode="decimal" maxlength="12" />
-          </div>
-          <div class="row"><button id="save-scores" class="primary">Save scores</button></div>
-        </div>
-
-        <div class="group">
-          <h3>Break timer</h3>
-          <div class="row">
-            <button data-break="180">3 min</button>
-            <button data-break="300">5 min</button>
-            <button data-break="600">10 min</button>
-            <input id="break-time" class="break-time" placeholder="Custom, e.g. 7 or 4:30" maxlength="8" />
-            <button id="break-start" class="primary">Start</button>
-          </div>
-          <div class="row">
-            <input id="break-label" placeholder="Label (optional), e.g. Break · Ishoma" maxlength="40" />
-            <button id="break-add" disabled>+1 min</button>
-            <button id="break-stop" class="danger" disabled>Stop</button>
-          </div>
-          <div class="hint" id="break-status">Shows a countdown on the bracket overlay.</div>
-        </div>
-
-        <div class="group">
-          <h3>Perma bans</h3>
-          <div class="row">
-            <button id="perma-edit">Edit perma bans</button>
-            <span class="hint" id="perma-count"></span>
-          </div>
-        </div>
-
-        <div class="group">
-          <h3>Draft</h3>
-          <div class="row">
-            <button id="undo-btn">Undo last</button>
-            <button id="reset-btn" class="danger">Reset match</button>
-          </div>
-        </div>
-
-        <div class="group">
-          <h3>Links</h3>
-          <div class="links" id="admin-links"></div>
-        </div>
-      </section>
-    </aside>
+    <p class="chooser-note">Organizers enter their code; everyone else can watch as a guest. Captains: use the link you were sent.</p>
   </main>
 
-  <div class="toast" id="toast" hidden></div>
+  <!-- Opens when a tournament is chosen: organizer code, or continue as guest (view only). -->
+  <dialog id="gate" class="gate">
+    <form id="gate-form" method="dialog" autocomplete="off">
+      <span class="kicker" id="gate-kicker">Tournament</span>
+      <h2 id="gate-title">—</h2>
+      <label for="gate-code">Organizer code</label>
+      <input id="gate-code" type="password" placeholder="Enter code" spellcheck="false" autocapitalize="off" />
+      <p class="gate-msg" id="gate-msg" role="alert"></p>
+      <button type="submit" class="gate-enter" id="gate-enter">Enter</button>
+      <div class="gate-or"><span>or</span></div>
+      <a class="gate-guest" id="gate-guest" href="#">Continue as guest <small>view only</small></a>
+      <button type="button" class="gate-close" id="gate-close" aria-label="Close">&times;</button>
+    </form>
+  </dialog>
 
-  <script src="js/config.js?v=20261127u"></script>
-  <script src="js/bracket-core.js?v=20261127u"></script>
-  <script src="js/draft-core.js?v=20261127u"></script>
-  <script src="js/backend.js?v=20261127u"></script>
-  <script src="js/common.js?v=20261127u"></script>
-  <script src="js/control.js?v=20261127u"></script>
+  <script src="js/config.js?v=20261128z2"></script>
+  <script src="js/chooser.js?v=20261128z2"></script>
 </body>
 </html>

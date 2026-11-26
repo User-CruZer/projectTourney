@@ -1,0 +1,68 @@
+/* Start page (index.html): choose Hologram or Whimpering Wastes. Noir minimal. */
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body.chooser {
+  min-height: 100vh; display: grid; place-items: center; padding: 32px 20px;
+  font-family: var(--font); color: var(--text);
+  background: radial-gradient(ellipse at center, #3a3a3a 0%, #1c1c1c 45%, #030303 100%) fixed;
+}
+main { width: min(960px, 100%); text-align: center; }
+.chooser-logo {
+  width: min(380px, 80%); height: auto;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 14px rgba(255, 255, 255, .28));
+}
+.chooser-lead {
+  margin: 18px 0 26px; font-weight: 700; font-size: 15px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted);
+}
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.choice {
+  display: flex; flex-direction: column; gap: 10px; padding: 28px 28px 24px; text-align: left;
+  color: var(--text); text-decoration: none;
+  background: rgba(17, 17, 17, .92); border: 1px solid var(--line-2); border-top: 3px solid var(--gold); border-radius: 10px;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.choice:hover, .choice:focus-visible { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(232, 197, 71, .15); outline: none; }
+.choice .kicker { font-size: 12px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+.choice b { font-size: 34px; font-weight: 800; line-height: 1.05; text-transform: uppercase; }
+.choice .desc { color: var(--muted); font-size: 15px; line-height: 1.4; }
+.choice .go { margin-top: 8px; font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+.chooser-note { margin-top: 24px; color: var(--muted); font-size: 13px; }
+.chooser-note code { color: var(--text); }
+@media (max-width: 640px) { .choices { grid-template-columns: 1fr; } .choice b { font-size: 28px; } }
+
+/* Code prompt (opens when a tournament is chosen) */
+.gate {
+  width: min(400px, calc(100% - 32px)); padding: 0; border: 1px solid var(--line-2); border-top: 3px solid var(--gold);
+  border-radius: 10px; background: #111; color: var(--text); font-family: var(--font);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+}
+.gate::backdrop { background: rgba(0, 0, 0, .7); backdrop-filter: blur(3px); }
+.gate form { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 28px; text-align: left; }
+.gate .kicker { font-size: 12px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+.gate h2 { margin: 0 0 8px; font-size: 28px; font-weight: 800; text-transform: uppercase; line-height: 1.05; }
+.gate label { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.gate input {
+  padding: 12px 14px; font: inherit; font-size: 16px; color: var(--text); background: #0a0a0a;
+  border: 1px solid var(--line-2); border-radius: 8px; outline: none;
+}
+.gate input:focus { border-color: var(--gold); }
+.gate-msg { min-height: 18px; margin: 0; font-size: 13px; color: var(--ban); }
+.gate-enter {
+  padding: 12px; font: inherit; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: #111; background: var(--gold); border: 0; border-radius: 8px; cursor: pointer;
+}
+.gate-enter:disabled { opacity: .6; cursor: wait; }
+.gate-or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .2em; }
+.gate-or::before, .gate-or::after { content: ''; flex: 1; height: 1px; background: var(--line-2); }
+.gate-guest {
+  display: flex; justify-content: center; align-items: baseline; gap: 8px; padding: 11px;
+  font-weight: 700; letter-spacing: .06em; color: var(--text); text-decoration: none;
+  border: 1px solid var(--line-2); border-radius: 8px; transition: border-color .15s;
+}
+.gate-guest:hover, .gate-guest:focus-visible { border-color: var(--text); outline: none; }
+.gate-guest small { font-weight: 600; color: var(--muted); }
+.gate-close {
+  position: absolute; top: 10px; right: 12px; width: 32px; height: 32px; font-size: 22px; line-height: 1;
+  color: var(--muted); background: none; border: 0; cursor: pointer;
+}
+.gate-close:hover { color: var(--text); }

@@ -67,6 +67,14 @@ var BracketCore = (function () {
 
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
+  /** Cleared scores with the same number of slots (2 stages in Whimpering Wastes, 3 boss points in Hologram). */
+  function emptyScoresLike(s) {
+    var blank = s.mode === 'hologram' ? '0' : '';
+    var len = function (t) { return s.scores && s.scores[t] && s.scores[t].length ? s.scores[t].length : 2; };
+    var fill = function (t) { var a = []; for (var k = 0; k < len(t); k++) a.push(blank); return a; };
+    return { A: fill('A'), B: fill('B') };
+  }
+
   /** Index in players[] of whoever is on `side` ('A' top / 'B' bottom) of match (r, i), or -1 if undecided. */
   function playerSlot(b, r, i, side) {
     var k = 2 * i + (side === 'A' ? 0 : 1);
@@ -124,7 +132,8 @@ var BracketCore = (function () {
         s.firstTeam = '';
         s.flipAt = 0;
         s.sequence = [];
-        s.scores = { A: ['', ''], B: ['', ''] };
+        s.scores = emptyScoresLike(s);
+        if (Array.isArray(s.bosses)) s.bosses = [];   // Hologram: each match rolls its own bosses
         s.turnStartedAt = Date.now();
         log = 'Loaded match: ' + pp[0] + ' vs ' + pp[1];
         break;
@@ -187,7 +196,7 @@ var BracketCore = (function () {
   function snapshot(state) {
     return clone({
       bracket: state.bracket || emptyBracket(), teams: state.teams, firstTeam: state.firstTeam,
-      flipAt: state.flipAt, scores: state.scores, actions: state.actions,
+      flipAt: state.flipAt, scores: state.scores, actions: state.actions, bosses: state.bosses,
     });
   }
 

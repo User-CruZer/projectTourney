@@ -1,8 +1,9 @@
 # projectTourney: HoloWastes Pick & Ban
-Tournament helper for Wuthering Waves: a live pick & ban system with a 16:9 stream overlay.
+Tournament helper for Wuthering Waves: live pick & ban systems with 16:9 stream overlays, for two tournaments.
 
-- **`overlay.html`**: 1920×1080 overlay for OBS or TikTok Live Studio. Display only.
-- **`index.html`**: the control page, where the admin and captains run the coin toss, bans, picks and scores.
+- **`index.html`**: start page. Choose **Hologram** or **Whimpering Wastes**, then enter the organizer code (that tournament's admin key, checked against its own Sheet) or **Continue as guest** (view only). Captains use the links they were sent. Old links like `index.html?admin=…` or `?team=…&key=…` are forwarded to the Whimpering Wastes control page automatically.
+- **Whimpering Wastes:** control page `wastes.html`, overlays `overlay.html`, `screens.html`, `bracket.html` (this README up to "Hologram" describes it).
+- **Hologram:** control page `hologram.html`, overlays `holo-overlay.html`, `holo-screens.html`, `holo-bracket.html`, with its own Google Sheet (see [Hologram](#hologram)).
 - The live state lives in a **Google Sheet**, accessed through a Google Apps Script web app. Every page polls it about every 2 seconds.
 
 ## Match format
@@ -45,8 +46,8 @@ To go back to open access for testing: set `REQUIRE_KEYS = false` and deploy a n
 |---|---|
 | `overlay.html` | Draft overlay: OBS / TikTok Live Studio browser source (1920×1080) |
 | `screens.html` | Gameplay overlay with two screen-share windows (see below) |
-| `index.html?admin=<ADMIN_KEY>` | Organizer: coin toss, scores, perma bans, undo/reset; can act for either player |
-| `index.html?team=A&key=…` / `?team=B&key=…` | Each player: ban/pick on their own turn only |
+| `wastes.html?admin=<ADMIN_KEY>` | Organizer: coin toss, scores, perma bans, undo/reset; can act for either player |
+| `wastes.html?team=A&key=…` / `?team=B&key=…` | Each player: ban/pick on their own turn only |
 
 The admin panel lists the overlay and captain links, each with a copy button. `ADMIN_KEY` is in the Sheet's `Meta` tab.
 
@@ -97,8 +98,38 @@ Fixing mistakes:
 ### TikTok Live Studio
 Add a **Link** (web) source with the overlay URL and size it to fill the 16:9 canvas.
 
+## Hologram
+A second tournament with its own players, bracket, match and Google Sheet. Same look, keys, coin toss, break timer and bracket as Whimpering Wastes.
+
+**Match format**
+1. **Bosses:** on `hologram.html`, admin panel → **Bosses** → **Roll bosses**. 3 different bosses are drawn at random from `HOLO_BOSSES` in `js/config.js`. **Re-roll** (tap twice) or **Pick by hand** until the draft starts. The coin toss stays locked until the bosses are rolled. Boss pictures live in `img/boss-img/`, named after the boss (lower case, dashes for spaces: "The False Sovereign" → `the-false-sovereign.webp`); a boss with no picture shows just its name. When the bosses are rolled, the overlays and the control page roll like casino reels: they slow down, boss 1, 2 and 3 stop one after another with a bounce and a gold glow, and the last reel pulses while it is the only one left (about 5.5 seconds; timings in `bossSpinner` in `js/common.js`, look in `css/reels.css`).
+2. **Coin toss**, then the draft: one team of 3 each, 1 ban each: winner picks, other picks, winner bans, other bans, then picks alternate until both have 3. Same rules as Whimpering Wastes (a ban only blocks the opponent, mirror picks allowed, perma bans block everyone).
+3. **Points:** admin panel → **Points**. One tick box per boss for each player; tick who earned that boss's point (saved immediately). Both or neither may get a boss's point.
+4. **Winner:** more points. **Confirm winner** in the Bracket card advances them; a tie is settled with the "[Name] wins" button.
+
+**Players:** the bracket starts with `HOLO_PLAYERS` from `js/config.js` (in demo mode; on the live Sheet enter them once under Bracket → Players and save). **WILD CARD** marks an open slot: type a late entrant's name over it, or give the opponent a bye with "[Name] wins".
+
+**Links**
+| Link | For |
+|---|---|
+| `holo-overlay.html` | Draft overlay (1920×1080): logo, points, the 3 bosses, both teams |
+| `holo-screens.html` | Gameplay overlay: two screen windows the same size as `screens.html` but lower (924×520 at x 24 / x 972, y 180; the 3 bosses sit under the names, coloured by who took each point) |
+| `holo-bracket.html` | Bracket with live panel, up next and break timer |
+| `hologram.html?admin=<ADMIN_KEY>` | Hologram organizer (its own key, from the Hologram Sheet's Meta tab) |
+| `hologram.html?team=A&key=…` / `?team=B&key=…` | Hologram captain links (listed in the admin panel) |
+
+**Setting up the Hologram Google Sheet (once, from your own Google account)**
+1. Create a new Google Sheet, for example "Project Tourney Hologram".
+2. **Extensions → Apps Script**. Replace the code in `Code.gs` with [`apps-script-hologram/Code.gs`](apps-script-hologram/Code.gs). Add a file **BracketCore** (**+ → Script**) and paste [`apps-script-hologram/BracketCore.gs`](apps-script-hologram/BracketCore.gs). Save.
+3. Choose **`setup`** in the function list → **Run** → allow access (Advanced → Go to project → Allow).
+4. **Deploy → New deployment →** gear → **Web app**. Execute as **Me**, who has access **Anyone** → **Deploy**. Copy the URL ending in `/exec`.
+5. Paste it into `HOLO_API_URL` at the top of `js/config.js`, bump the `?v=` tag, and push.
+6. Open `hologram.html?admin=<ADMIN_KEY from the new Sheet's Meta tab>`, enter the players under Bracket → Players, and save.
+
+Until `HOLO_API_URL` is set, the Hologram pages run in demo mode (red banner, data only in this browser).
+
 ## Try it without Google
-Add `local=1` to any URL (for example `index.html?admin=1&local=1` and `overlay.html?local=1`). The pages then sync only between tabs of one browser.
+Add `local=1` to any URL (for example `wastes.html?admin=1&local=1` and `overlay.html?local=1`, or `hologram.html?admin=1&local=1` and `holo-overlay.html?local=1`). Hologram and Whimpering Wastes keep separate demo data. The pages then sync only between tabs of one browser.
 
 ## Google Sheets backend
 
@@ -112,7 +143,7 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
 
 ## After changing CSS or JS files
-The HTML pages load every CSS/JS file with a version tag (`?v=20261127u`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127u`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
+The HTML pages load every CSS/JS file with a version tag (`?v=20261127z`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in every `.html` page to a new value, for example `?v=20261127z`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
 - Title, roster and elements: `js/config.js`.

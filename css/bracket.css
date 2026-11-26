@@ -129,3 +129,71 @@
 .with-logo .col-head { top: 186px; }
 .with-logo .live-panel { top: 214px; height: 306px; }
 .with-logo .next-panel { top: 700px; }
+
+/* ---------- a winner is set: winner flashes, loser shakes and fades, the line draws, the name moves up ---------- */
+.box.just-won { animation: bk-won 1.1s ease-out; z-index: 2; }
+@keyframes bk-won {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 197, 71, .9); background: #3a3218; }
+  30% { transform: scale(1.08); box-shadow: 0 0 0 4px var(--gold), 0 0 36px rgba(232, 197, 71, .8); }
+  100% { transform: none; box-shadow: 0 0 0 0 transparent; }
+}
+.box.just-lost { animation: bk-lost .8s ease-out; }
+@keyframes bk-lost {
+  0% { opacity: 1; transform: none; }
+  15% { transform: translateX(-7px); } 30% { transform: translateX(6px); } 45% { transform: translateX(-4px); } 60% { transform: translateX(2px); }
+  100% { opacity: .4; transform: none; }
+}
+.links path.draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: bk-draw .7s ease-in-out .35s forwards; }
+@keyframes bk-draw { to { stroke-dashoffset: 0; } }
+.box.arrive { animation: bk-arrive .8s cubic-bezier(.2, 1.3, .4, 1) .9s both; z-index: 2; }
+@keyframes bk-arrive {
+  0% { opacity: 0; transform: translateX(-40px) scale(.9); }
+  60% { opacity: 1; box-shadow: 0 0 0 3px var(--gold), 0 0 30px rgba(232, 197, 71, .7); }
+  100% { opacity: 1; transform: none; box-shadow: 0 0 0 0 transparent; }
+}
+.box.champ.crowned { animation: bk-crown 1.4s cubic-bezier(.2, 1.4, .4, 1) 1s both; }
+@keyframes bk-crown {
+  0% { opacity: 0; transform: scale(.4); }
+  60% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 0 4px var(--gold), 0 0 80px rgba(232, 197, 71, .9); }
+  100% { transform: none; box-shadow: 0 0 40px rgba(232, 197, 71, .3); }
+}
+.box.champ.crowned .trophy { animation: bk-trophy 1.2s cubic-bezier(.2, 1.6, .4, 1) 1.6s both; }
+@keyframes bk-trophy { 0% { opacity: 0; transform: translate(-50%, -60px) rotate(-25deg); } 100% { opacity: 1; transform: translateX(-50%); } }
+
+/* big banner across the bracket (js/bracket.js celebrate) */
+.win-banner {
+  position: absolute; left: 330px; width: 900px; top: 390px; z-index: 10; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 40px 30px; text-align: center;
+  background: linear-gradient(180deg, rgba(12, 12, 12, .96), rgba(24, 20, 8, .96));
+  border: 2px solid var(--gold); border-radius: 10px; box-shadow: 0 20px 80px rgba(0, 0, 0, .8), 0 0 60px rgba(232, 197, 71, .35);
+  opacity: 0; transform: scale(.7); pointer-events: none; visibility: hidden;
+  transition: opacity .35s, transform .35s, visibility 0s .35s;
+}
+.win-banner.show { opacity: 1; transform: none; visibility: visible; transition: opacity .35s .55s, transform .5s cubic-bezier(.2, 1.4, .4, 1) .55s, visibility 0s .55s; }
+.wb-kicker { font-size: 18px; font-weight: 800; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); }
+.wb-name { max-width: 100%; font-size: 84px; font-weight: 800; line-height: 1; text-transform: uppercase; color: #fff; white-space: nowrap; overflow: hidden; }
+.wb-sub { font-size: 22px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.win-banner.show .wb-name { animation: wb-name .9s cubic-bezier(.2, 1.4, .4, 1) .7s both; }
+@keyframes wb-name { 0% { opacity: 0; letter-spacing: .4em; filter: blur(6px); } 100% { opacity: 1; letter-spacing: normal; filter: none; } }
+
+.win-banner.champion { top: 300px; padding: 30px 40px 40px; border-width: 3px; box-shadow: 0 20px 80px rgba(0, 0, 0, .8), 0 0 120px rgba(232, 197, 71, .6); }
+.win-banner.champion .wb-name { font-size: 110px; color: #fff6d6; text-shadow: 0 0 30px rgba(232, 197, 71, .7); }
+.win-banner.champion .wb-sub { font-size: 30px; letter-spacing: .5em; color: var(--gold); }
+.wb-trophy { font-size: 80px; line-height: 1; filter: drop-shadow(0 0 20px rgba(232, 197, 71, .8)); }
+.win-banner.show .wb-trophy { animation: bk-trophy-b 1.2s cubic-bezier(.2, 1.6, .4, 1) .8s both; }
+@keyframes bk-trophy-b { 0% { opacity: 0; transform: translateY(-80px) rotate(-30deg) scale(.5); } 100% { opacity: 1; transform: none; } }
+
+/* confetti for the champion (falls over the whole canvas) */
+.confetti { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; overflow: hidden; }
+.win-banner .confetti { position: absolute; left: -330px; top: -300px; }
+.confetti i {
+  position: absolute; top: -30px; width: 12px; height: 20px; border-radius: 2px; opacity: 0;
+  animation-name: confetti; animation-timing-function: cubic-bezier(.3, .6, .6, 1); animation-fill-mode: forwards;
+}
+.confetti i:nth-child(3n) { width: 9px; height: 9px; border-radius: 50%; }
+.confetti i:nth-child(4n) { width: 16px; height: 7px; }
+@keyframes confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), 1140px) rotate(var(--rot)); }
+}

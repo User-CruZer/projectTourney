@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hologram Screens — HoloWastes</title>
+  <script>window.HW_MODE = 'hologram';</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/theme.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/overlay.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/screens.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/holo.css?v=20261128z2" />
+  <link rel="stylesheet" href="css/reels.css?v=20261128z2" />
+</head>
+<!--
+  Hologram screen-share overlay. OBS / TikTok Live Studio: Browser/Link source at 1920 x 1080,
+  placed ABOVE the two screen captures. Same windows as the Whimpering Wastes screens overlay:
+    Player A window: x 24,  y 128, 924 x 520
+    Player B window: x 972, y 128, 924 x 520
+  URL options:  ?guides=1  fill the windows with alignment guides
+                ?bg=0      no background (the windows are always see-through)
+-->
+<body>
+  <div class="stage screens-stage holo-screens" id="stage">
+    <header class="bar">
+      <div class="panel plate A">
+        <div class="pname" id="name-A"></div>
+        <div class="hpoints" id="pts-A"></div>
+      </div>
+      <div class="center">
+        <div class="mini-title" id="title">HOLOWASTES</div>
+        <div class="stage-tag">Hologram</div>
+      </div>
+      <div class="panel plate B">
+        <div class="hpoints" id="pts-B"></div>
+        <div class="pname" id="name-B"></div>
+      </div>
+    </header>
+
+    <!-- the match's 3 bosses under the names, coloured by who took each boss's point -->
+    <div class="hboss-row" id="bosses"></div>
+
+    <div class="screen A" id="screen-A"><div class="guide" id="guide-A"></div></div>
+    <div class="screen B" id="screen-B"><div class="guide" id="guide-B"></div></div>
+
+    <section class="panel perma-strip">
+      <span class="label">Perma banned by the system</span>
+      <div class="perma-list" id="perma"></div>
+    </section>
+
+    <section class="panel team A" id="team-A"></section>
+    <section class="panel team B" id="team-B"></section>
+  </div>
+
+  <script src="js/config.js?v=20261128z2"></script>
+  <script src="js/bracket-core.js?v=20261128z2"></script>
+  <script src="js/holo-core.js?v=20261128z2"></script>
+  <script src="js/backend.js?v=20261128z2"></script>
+  <script src="js/common.js?v=20261128z2"></script>
+  <script src="js/holo-common.js?v=20261128z2"></script>
+  <script src="js/holo-screens.js?v=20261128z2"></script>
+</body>
+</html>
