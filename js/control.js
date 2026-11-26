@@ -147,10 +147,10 @@
     const picks = role === 'admin' ? 'picks' : 'pick';
     $('lock-info').innerHTML = verb === 'ban'
       ? (selected
-        ? `${me} ${bans} <b>${esc(selected)}</b> → ${opp} can't use it`
+        ? `${me} ${bans} <b>${esc(selected)}</b> → ${opp} can't use it<span class="tap-hint">or double-tap it to lock</span>`
         : `${me} ${bans} next: choose a resonator ${opp} can't use`)
       : (selected
-        ? `${me} ${picks} <b>${esc(selected)}</b> ${HOLO ? 'for the team' : `for Stage ${step.stage}`}`
+        ? `${me} ${picks} <b>${esc(selected)}</b> ${HOLO ? 'for the team' : `for Stage ${step.stage}`}<span class="tap-hint">or double-tap it to lock</span>`
         : `${me} ${picks} next: choose a resonator ${HOLO ? 'for the team' : `for Stage ${step.stage}`}`);
   }
 
@@ -263,6 +263,11 @@
   }
 
   // ---------- events
+  // Tap a resonator to select it; tap the same one again quickly (double-click / double-tap) to lock it in.
+  // Timed by hand: the first tap redraws the list, so the browser's own dblclick often never fires,
+  // and phones don't send dblclick at all.
+  const DOUBLE_TAP_MS = 450;
+  let lastTap = { name: null, at: 0 };
   $('roster').addEventListener('click', (e) => {
     const el = e.target.closest('.res');
     if (!el) return;
@@ -272,13 +277,16 @@
       return renderRoster();
     }
     if (el.classList.contains('used') || el.classList.contains('locked')) return;
-    if (e.detail > 1 && name === selected) return;   // 2nd click of a double-click (which locks it in)
+    const now = Date.now();
+    const double = lastTap.name === name && now - lastTap.at < DOUBLE_TAP_MS;
+    lastTap = double ? { name: null, at: 0 } : { name, at: now };
+    if (double) {                                   // second tap: lock in (the Lock button does the checks)
+      if (selected !== name) { selected = name; renderRoster(); renderLockBar(); }
+      $('lock-btn').click();
+      return;
+    }
     selected = name === selected ? null : name;
     renderRoster(); renderLockBar();
-  });
-  $('roster').addEventListener('dblclick', (e) => {
-    const el = e.target.closest('.res');
-    if (el && !permaDraft && el.dataset.name === selected) $('lock-btn').click();
   });
   $('lock-btn').addEventListener('click', () => {
     const t = actingTeam();
