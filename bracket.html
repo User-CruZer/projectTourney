@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bracket — HoloWastes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/theme.css?v=20261126w" />
+  <link rel="stylesheet" href="css/overlay.css?v=20261126w" />
+  <link rel="stylesheet" href="css/bracket.css?v=20261126w" />
+</head>
+<!--
+  Bracket overlay. OBS / TikTok Live Studio: Browser/Link source, Width 1920, Height 1080.
+  Updates automatically when the admin confirms a match winner. ?bg=1 = solid background.
+-->
+<body>
+  <div class="stage bracket-stage" id="stage">
+    <header class="bk-title">
+      <span class="line"></span>
+      <div><h1 id="title">HOLOWASTES</h1><div class="sub">Bracket</div></div>
+      <span class="line"></span>
+    </header>
+    <svg class="links" id="links" width="1920" height="1080" viewBox="0 0 1920 1080"></svg>
+    <div id="cols"></div>
+  </div>
+
+  <script src="js/config.js?v=20261126w"></script>
+  <script src="js/bracket-core.js?v=20261126w"></script>
+  <script src="js/draft-core.js?v=20261126w"></script>
+  <script src="js/backend.js?v=20261126w"></script>
+  <script src="js/common.js?v=20261126w"></script>
+  <script src="js/bracket.js?v=20261126w"></script>
+</body>
+</html>

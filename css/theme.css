@@ -1,0 +1,23 @@
+/*
+ * HoloWastes theme: "Noir minimal" — black and white with a single gold accent.
+ * Shared by every page. Player / ban / champion colours can be changed in
+ * js/config.js → THEME (applied on top of these defaults by js/common.js).
+ */
+:root {
+  --a: #f2f2f2;            /* Player A — white */
+  --b: #9fb4c9;            /* Player B — steel blue */
+  --ban: #e5484d;          /* bans — red */
+  --gold: #e8c547;         /* accent, active turn, champion */
+
+  --bg: #0a0a0a;
+  --panel: rgba(17, 17, 17, .94);
+  --panel-2: #1a1a1a;
+  --line: #2a2a2a;
+  --line-2: #3d3d3d;
+  --text: #f2f2f2;
+  --muted: #8a8a8a;
+  --ink: #0b0b0b;          /* text on bright fills */
+  --win: #f2f2f2;          /* bracket winner lines */
+
+  --font: 'Inter', system-ui, sans-serif;
+}

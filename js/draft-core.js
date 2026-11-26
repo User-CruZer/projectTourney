@@ -31,7 +31,9 @@
       actions: [],
       permaBans: [],
       scores: emptyScores(),
-      uniquePicks: true,
+      uniquePicks: UNIQUE_PICKS,
+      bracket: global.BracketCore ? global.BracketCore.emptyBracket() : undefined,
+      bracketLog: '',
       turnStartedAt: Date.now(),
       version: 1,
       now: Date.now(),
@@ -42,15 +44,34 @@
     return state.sequence[state.actions.length] || null;
   }
 
-  function isAvailable(state, char, team) {
+  // false = both players may pick the same resonator (mirror picks).
+  const UNIQUE_PICKS = false;
+
+  /**
+   * Can this player (team) ban/pick this resonator right now? (type defaults to the current step's type)
+   * - Perma bans: nobody.
+   * - A ban is aimed at the OPPONENT: it stops them picking it; the banning player still can.
+   * - A player can't pick the same resonator twice; mirror picks depend on uniquePicks.
+   */
+  function isAvailable(state, char, team, type) {
+    if (!type) { const step = currentStep(state); type = step ? step.type : 'pick'; }
     if (state.permaBans.includes(char)) return false;
     for (const a of state.actions) {
       if (a.char !== char) continue;
-      if (a.type === 'ban') return false;          // banned for everyone
-      if (state.uniquePicks) return false;         // already picked by someone
-      if (a.team === team) return false;           // already picked by this player
+      if (type === 'ban') {
+        if (a.type === 'ban' && a.team === team) return false;   // already banned it
+        continue;
+      }
+      if (a.type === 'ban' && a.team !== team) return false;     // opponent banned it against me
+      if (a.type === 'pick' && (a.team === team || state.uniquePicks)) return false;
     }
     return true;
+  }
+
+  /** The ban aimed at this player (made by the opponent): { index in sequence, action or null }. */
+  function banAgainst(state, team) {
+    const i = state.sequence.findIndex((x) => x.type === 'ban' && x.team !== team);
+    return { index: i, action: i >= 0 ? state.actions[i] || null : null };
   }
 
   const cleanScore = (v) => String(v == null ? '' : v).trim().slice(0, 12);
@@ -72,7 +93,7 @@
         if (!step) throw new Error('Draft is already complete.');
         if (op.team !== step.team) throw new Error("It's not your turn.");
         if (!op.char) throw new Error('No character selected.');
-        if (!isAvailable(s, op.char, op.team)) throw new Error(op.char + ' is not available.');
+        if (!isAvailable(s, op.char, op.team, step.type)) throw new Error(op.char + ' is not available.');
         s.actions.push({ team: step.team, type: step.type, char: op.char, ts: Date.now() });
         break;
       }
@@ -90,6 +111,8 @@
       case 'setTeams':
         if (op.A) s.teams.A = String(op.A).slice(0, 40);
         if (op.B) s.teams.B = String(op.B).slice(0, 40);
+        // Renaming a player of the loaded bracket match renames them in the bracket too.
+        if (global.BracketCore && s.bracket) global.BracketCore.syncBracketFromTeams(s);
         resetsTimer = false;
         break;
       case 'setScores':
@@ -109,5 +132,5 @@
     return s;
   }
 
-  global.DraftCore = { FORMAT, buildSequence, emptyState, currentStep, isAvailable, apply };
+  global.DraftCore = { FORMAT, UNIQUE_PICKS, buildSequence, emptyState, currentStep, isAvailable, banAgainst, apply };
 })(window);

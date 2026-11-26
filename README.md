@@ -46,6 +46,24 @@ Tip: in OBS, open a capture's **Edit Transform** (Ctrl+E) and type the numbers i
 - `?guides=1`: fill the windows with striped guides while you line the captures up.
 - `?bg=1`: solid background for previewing.
 
+### Bracket (`bracket.html`)
+This is a 16-player single-elimination bracket (Babak 16 → Perempat Final → Semifinal → Final → Juara) that fills itself in as results are confirmed. Add it in OBS as a Browser source at 1920×1080.
+
+On the admin control page, under **Bracket**:
+1. **Players (16):** enter the names in bracket order (1 vs 2, 3 vs 4, …). You can fix them at any time; results follow the slot, so a typo fix updates every round.
+2. **Load into draft:** pick a match and load it. The two names go into the draft and the coin toss, picks and scores reset.
+3. Play the match and save both stage scores.
+4. **Confirm winner:** the higher total advances. The button names the winner, and you tap it twice to confirm.
+
+Fixing mistakes:
+- **"[Name] wins":** set any match's winner manually, for ties or corrections. If this changes a winner, later results that depended on it are cleared.
+- **Clear result:** remove a match's result, along with any later results that depended on it.
+- **Undo last bracket change:** step back through bracket changes. Every change is saved as a snapshot in the Sheet's **BracketLog** tab.
+- **Reset bracket:** clear all results and keep the players.
+- The Sheet's **Bracket** tab always shows the current bracket in plain rows (view only).
+
+`apps-script/BracketCore.gs` is a copy of `js/bracket-core.js`. Both the website and the Apps Script use it, so if you edit one, paste it into the Apps Script `BracketCore.gs` file as well and deploy a new version.
+
 ### TikTok Live Studio
 Add a **Link** (web) source with the overlay URL and size it to fill the 16:9 canvas.
 
@@ -64,8 +82,11 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
 
 ## After changing CSS or JS files
-The HTML pages load every CSS/JS file with a version tag (`?v=20261126b`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127a`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
+The HTML pages load every CSS/JS file with a version tag (`?v=20261126w`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261126w`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
 - Title, roster, elements and portraits: `js/config.js` (add `img: 'assets/…png'` to show a portrait instead of initials).
 - Turn timer: `TURN_SECONDS` in `js/config.js` (display only; `0` hides it).
+- Look: "Noir minimal" (black and white with a gold accent, Inter font).
+  - Colours: `THEME` in `js/config.js` sets the Player A, Player B, ban and champion/accent colours for every page.
+  - The base colours and font are in `css/theme.css`. Each page's layout and sizes are in its own CSS file (`overlay.css`, `screens.css`, `bracket.css`, `style.css`).

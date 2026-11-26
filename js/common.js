@@ -1,6 +1,12 @@
 /* Small helpers shared by the overlay and the control page. */
 (function (global) {
   const cfg = global.TOURNEY_CONFIG;
+
+  // Theme colours from config.js override the defaults in css/theme.css.
+  const T = cfg.THEME || {};
+  [['playerA', '--a'], ['playerB', '--b'], ['ban', '--ban'], ['champion', '--gold']].forEach(([k, v]) => {
+    if (T[k]) document.documentElement.style.setProperty(v, T[k]);
+  });
   const byName = Object.fromEntries(cfg.ROSTER.map((c) => [c.name, c]));
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
@@ -38,6 +44,11 @@
    * then lets the text wrap (starting a bit bigger again) before shrinking further.
    */
   function fitText(el, max, min, lines = 1) {
+    // Start from the theme's CSS font size (themes use different fonts/sizes), capped at max.
+    el.style.fontSize = '';
+    const cssSize = parseFloat(getComputedStyle(el).fontSize);
+    if (isFinite(cssSize) && cssSize > 0) max = Math.min(max, Math.round(cssSize));
+    min = Math.min(min, max);
     const mh = parseFloat(getComputedStyle(el).maxHeight);
     const maxH = isFinite(mh) ? mh : Infinity;     // boxes without max-height only care about width
     const over = () => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > maxH + 1;
@@ -80,6 +91,22 @@
     };
     addEventListener('resize', fit);
     fit();
+  }
+
+  // Demo mode (?local=1) keeps data only in this browser — make that impossible to miss,
+  // so nobody runs the real match (or an OBS source) on practice data by accident.
+  if (!cfg.API_URL && global.self === global.top) {   // not inside the control page's preview
+    const live = location.pathname + location.search.replace(/([?&])local=1(&|$)/, (m, a, b) => (b ? a : '')).replace(/\?$/, '');
+    const bar = document.createElement('div');
+    bar.className = 'demo-banner';
+    bar.innerHTML = 'DEMO MODE: practice data saved only in this browser, NOT the Google Sheet. ' +
+      'For the real match use the link without <b>local=1</b> (admins: <b>?admin=</b> your ADMIN_KEY). ' +
+      `<a href="${esc(live)}">Open without demo mode</a>`;
+    bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:999;padding:8px 14px;text-align:center;' +
+      'background:#e5484d;color:#fff;font:700 15px/1.3 Inter,system-ui,sans-serif;letter-spacing:.02em';
+    bar.querySelector('a').style.cssText = 'color:#fff;margin-left:10px;text-decoration:underline';
+    document.body.appendChild(bar);
+    if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
   global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas };

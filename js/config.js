@@ -4,10 +4,21 @@
 window.TOURNEY_CONFIG = {
   TITLE: 'HoloWastes',
 
+  // Colours of the overlays and control page (hex). Leave a value out to use the default.
+  THEME: {
+    playerA: '#f2f2f2',   // white
+    playerB: '#9fb4c9',   // steel blue
+    ban: '#e5484d',       // red
+    champion: '#e8c547',  // gold (also the accent colour)
+  },
+
   // Paste your Google Apps Script Web App URL here (ends with /exec).
   // Leave empty to run in LOCAL DEMO MODE (syncs only between tabs of one browser).
   API_URL: new URLSearchParams(location.search).get('local') === '1' ? '' :
     'https://script.google.com/macros/s/AKfycbzyAhdNhqwz0Pqp0Ra0G20Dc8zOJemlcvkid81ABQAXKr-ZkGEnE8_rC1ze8ZzFI54mOw/exec',
+
+  // Column titles on the bracket overlay (round of 16, quarterfinal, semifinal, final, champion).
+  ROUND_NAMES: ['Babak 16', 'Perempat Final', 'Semifinal', 'Final', 'Juara'],
 
   // How often each viewer checks the sheet for changes (ms).
   POLL_MS: 2000,

@@ -78,11 +78,22 @@
       try {
         const raw = localStorage.getItem(KEY);
         const parsed = raw && JSON.parse(raw);
-        if (parsed && parsed.schema === 2) return parsed;
+        if (parsed && parsed.schema === 2) {
+          if (!parsed.bracket) parsed.bracket = BracketCore.emptyBracket();
+          parsed.uniquePicks = DraftCore.UNIQUE_PICKS;   // rule comes from the code, not old saved data
+          parsed.bracketLog = undoLog().length ? undoLog()[undoLog().length - 1].log : '';
+          return parsed;
+        }
       } catch (_) {}
       const s = DraftCore.emptyState();
       localStorage.setItem(KEY, JSON.stringify(s));
       return s;
+    }
+
+    // Bracket undo history: [{ time, log, snapshot }] (newest last), like the Sheet's BracketLog tab.
+    const LOG_KEY = 'projectTourney.bracketLog';
+    function undoLog() {
+      try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (_) { return []; }
     }
 
     async function getState() {
@@ -92,7 +103,27 @@
     }
 
     async function send(op) {
-      const next = DraftCore.apply(read(), op);
+      const cur = read();
+      let next;
+      if (BracketCore.OPS.includes(op.op)) {
+        const res = BracketCore.apply(cur, op);
+        next = res.state;
+        const log = undoLog();
+        log.push({ time: Date.now(), log: res.log, snapshot: BracketCore.snapshot(cur) });
+        localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(-50)));
+      } else if (op.op === 'undoBracket') {
+        const log = undoLog();
+        const last = log.pop();
+        if (!last) throw new Error('Nothing to undo.');
+        next = Object.assign({}, cur, last.snapshot);
+        next.sequence = DraftCore.buildSequence(next.firstTeam);
+        localStorage.setItem(LOG_KEY, JSON.stringify(log));
+      } else {
+        next = DraftCore.apply(cur, op);
+      }
+      next.version = (cur.version || 0) + 1;
+      next.now = Date.now();
+      next.bracketLog = undoLog().length ? undoLog()[undoLog().length - 1].log : '';
       localStorage.setItem(KEY, JSON.stringify(next));
       listeners.forEach((cb) => cb(next));
       return next;
@@ -100,7 +131,9 @@
 
     function subscribe(cb) {
       listeners.push(cb);
-      cb(read());
+      // "now" must be the current time, not when the state was last saved —
+      // the overlay uses it to decide whether a coin flip just happened.
+      cb(Object.assign(read(), { now: Date.now() }));
       global.addEventListener('storage', (e) => {
         if (e.key === KEY && e.newValue) cb(JSON.parse(e.newValue));
       });

@@ -12,12 +12,15 @@
   let state = null;
   let clockOffset = 0;
   let seenFlip = null;
+  let lastCount = null;   // number of actions at the previous update
+  let freshIdx = -1;      // index of a just-locked action (gets the lock-in animation)
 
   function fitNames() {
-    fitText($('name-A'), 46, 20, 2);
-    fitText($('name-B'), 46, 20, 2);
-    fitText($('s-team'), 34, 16, 2);
-    document.querySelectorAll('.ban-name').forEach((el) => fitText(el, 36, 20));
+    fitText($('name-A'), 54, 22, 2);
+    fitText($('name-B'), 54, 22, 2);
+    fitText($('s-team'), 40, 18, 2);
+    document.querySelectorAll('.ban-name').forEach((el) => fitText(el, 40, 20));
+    document.querySelectorAll('.slot .nm').forEach((el) => fitText(el, 40, 18, 2));
   }
 
   const mono = (name) => {
@@ -42,11 +45,11 @@
 
     // bans + stage slots, laid out from the sequence
     ['A', 'B'].forEach((t) => {
-      const banI = s.sequence.findIndex((x) => x.team === t && x.type === 'ban');
-      const ban = banI >= 0 ? s.actions[banI] : null;
+      // Ban box on a player's side = the resonator banned AGAINST them (by the opponent).
+      const { index: banI, action: ban } = DraftCore.banAgainst(s, t);
       const banBox = $('ban-' + t);
-      banBox.className = `panel ban ${t}` + (ban ? ' filled' : '') + (banI === idx && banI >= 0 ? ' active' : '');
-      banBox.innerHTML = `<div class="ban-label">Ban</div><div class="ban-name">${
+      banBox.className = `panel ban ${t}` + (ban ? ' filled' : '') + (banI === idx && banI >= 0 ? ' active' : '') + (ban && banI === freshIdx ? ' fresh' : '');
+      banBox.innerHTML = `<div class="ban-label">Banned</div><div class="ban-name">${
         ban ? esc(ban.char) : banI === idx && banI >= 0 ? 'Banning…' : '—'}</div>`;
 
       [1, 2].forEach((stage) => {
@@ -62,7 +65,7 @@
           </div>
           <div class="slots">${steps.map((i) => {
             const a = i >= 0 ? s.actions[i] : null;
-            if (a) return `<div class="slot filled" style="--el:${elColor(a.char)}"><div class="mono">${mono(a.char)}</div><div class="nm">${esc(a.char)}</div></div>`;
+            if (a) return `<div class="slot filled${i === freshIdx ? ' fresh' : ''}" style="--el:${elColor(a.char)}"><div class="mono">${mono(a.char)}</div><div class="nm">${esc(a.char)}</div></div>`;
             const active = i >= 0 && i === idx;
             return `<div class="slot${active ? ' active' : ''}"><span class="wait">${active ? 'Picking…' : '—'}</span></div>`;
           }).join('')}</div>`;
@@ -80,7 +83,7 @@
     } else {
       team.className = 's-team ' + step.team;
       team.textContent = s.teams[step.team];
-      action.textContent = step.type === 'ban' ? 'Ban' : `Pick · Stage ${step.stage}`;
+      action.textContent = step.type === 'ban' ? 'Bans' : `Pick · Stage ${step.stage}`;
     }
     fitNames();
     tick();
@@ -120,14 +123,29 @@
     state = next;
     if (next.now) clockOffset = next.now - Date.now();
     const serverNow = Date.now() + clockOffset;
-    if (next.flipAt && next.flipAt !== seenFlip && serverNow - next.flipAt < 8000) playCoin(next);
+    // Play each flip once per browser tab — reloading the page (e.g. switching the
+    // control-page preview) must not replay a toss that was already shown.
+    let played = null;
+    try { played = sessionStorage.getItem('hw.coinPlayed'); } catch (_) {}
+    if (next.flipAt && next.flipAt !== seenFlip && String(next.flipAt) !== played && serverNow - next.flipAt < 8000) {
+      playCoin(next);
+      try { sessionStorage.setItem('hw.coinPlayed', String(next.flipAt)); } catch (_) {}
+    }
     if (!next.flipAt) $('coin-layer').hidden = true;
     seenFlip = next.flipAt;
+    // Animate only an action that was just locked in (not old picks on page load).
+    freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
+    lastCount = next.actions.length;
     render();
+    freshIdx = -1;
   }
 
   backend.subscribe(onState);
   // Re-fit once the web fonts have loaded (sizes differ from the fallback font).
-  if (document.fonts) document.fonts.ready.then(() => state && render());
+  if (document.fonts) {
+    // Re-fit text once web fonts arrive (also later ones, e.g. the Noir theme font).
+    document.fonts.ready.then(() => state && render());
+    document.fonts.addEventListener("loadingdone", () => state && render());
+  }
   setInterval(() => state && tick(), 250);
 })();

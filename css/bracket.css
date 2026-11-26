@@ -1,0 +1,63 @@
+/* Bracket overlay — Noir minimal. Builds on theme.css + overlay.css. */
+
+.bracket-stage { display: block; padding: 0; }
+
+.bk-title {
+  position: absolute; left: 64px; right: 64px; top: 18px; height: 90px;
+  display: flex; align-items: center; justify-content: center; gap: 34px; text-align: center;
+}
+.bk-title h1 {
+  margin: 0; font-weight: 800; font-size: 40px; line-height: 1;
+  letter-spacing: .38em; padding-left: .38em; text-transform: uppercase; color: var(--text);
+}
+.bk-title .sub { font-weight: 700; font-size: 16px; letter-spacing: .5em; padding-left: .5em; color: var(--muted); text-transform: uppercase; margin-top: 8px; }
+.bk-title .line { flex: 1; max-width: 460px; height: 2px; }
+.bk-title .line:first-child { background: linear-gradient(90deg, transparent, var(--gold)); }
+.bk-title .line:last-child { background: linear-gradient(90deg, var(--gold), transparent); }
+
+.links { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.links path { fill: none; stroke: #2e2e2e; stroke-width: 3; }
+.links path.won { stroke: var(--win); stroke-width: 4; }
+.links path.final.won { stroke: var(--gold); stroke-width: 5; }
+
+.col-head {
+  position: absolute; top: 122px; width: 280px; text-align: center;
+  font-weight: 700; font-size: 15px; letter-spacing: .24em; text-transform: uppercase; color: var(--muted);
+}
+
+.box {
+  position: absolute; width: 280px; height: 42px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; padding: 0 14px;
+  background: #141414; border: 1px solid var(--line); border-left: 3px solid var(--line-2); border-radius: 4px;
+  transition: border-color .3s, opacity .3s, background .3s;
+}
+.box .nm {
+  flex: 1; min-width: 0; font-size: 22px; font-weight: 700; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden;
+}
+.box .sc { flex: none; font-size: 19px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.box.empty { border-style: dashed; border-left-style: solid; background: rgba(14, 14, 14, .6); }
+.box.empty .nm { color: var(--line-2); }
+
+.box.win { background: #1d1d1d; border-color: var(--win); border-left-color: var(--gold); }
+.box.win .nm { color: #fff; }
+.box.win .sc { color: var(--gold); }
+.box.lose { opacity: .4; }
+.box.lose .nm { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: #6a6a6a; }
+.box.live { border-color: var(--gold); border-left-color: var(--gold); animation: live 1.3s ease-in-out infinite; }
+@keyframes live { 50% { box-shadow: 0 0 0 3px rgba(232, 197, 71, .25); } }
+.live-tag {
+  position: absolute; right: -8px; top: -14px; padding: 1px 10px; border-radius: 3px;
+  background: var(--gold); color: var(--ink); font-weight: 800; font-size: 13px; letter-spacing: .16em;
+}
+
+.box.champ { height: 78px; border: 2px solid rgba(232, 197, 71, .4); justify-content: center; }
+.box.champ .nm { text-align: center; font-weight: 800; font-size: 32px; }
+.box.champ.win {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(232, 197, 71, .18), #141414);
+  box-shadow: 0 0 40px rgba(232, 197, 71, .3);
+  animation: pop .6s ease-out;
+}
+.box.champ.win .nm { color: #fff6d6; }
+.trophy { position: absolute; left: 50%; top: -56px; transform: translateX(-50%); font-size: 42px; filter: drop-shadow(0 0 12px rgba(232, 197, 71, .6)); }
