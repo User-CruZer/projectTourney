@@ -17,8 +17,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/theme.css?v=20261128z7" />
-  <link rel="stylesheet" href="css/chooser.css?v=20261128z7" />
+  <link rel="stylesheet" href="css/theme.css?v=20261128z8" />
+  <link rel="stylesheet" href="css/chooser.css?v=20261128z8" />
+  <link rel="stylesheet" href="css/gate.css?v=20261128z8" />
 </head>
 <!-- Start page: pick the tournament. -->
 <body class="chooser">
@@ -42,22 +43,8 @@
     <p class="chooser-note">Organizers enter their code; everyone else can watch as a guest. Captains: use the link you were sent.</p>
   </main>
 
-  <!-- Opens when a tournament is chosen: organizer code, or continue as guest (view only). -->
-  <dialog id="gate" class="gate">
-    <form id="gate-form" method="dialog" autocomplete="off">
-      <span class="kicker" id="gate-kicker">Tournament</span>
-      <h2 id="gate-title">—</h2>
-      <label for="gate-code">Organizer code</label>
-      <input id="gate-code" type="password" placeholder="Enter code" spellcheck="false" autocapitalize="off" />
-      <p class="gate-msg" id="gate-msg" role="alert"></p>
-      <button type="submit" class="gate-enter" id="gate-enter">Enter</button>
-      <div class="gate-or"><span>or</span></div>
-      <a class="gate-guest" id="gate-guest" href="#">Continue as guest <small>view only</small></a>
-      <button type="button" class="gate-close" id="gate-close" aria-label="Close">&times;</button>
-    </form>
-  </dialog>
-
-  <script src="js/config.js?v=20261128z7"></script>
-  <script src="js/chooser.js?v=20261128z7"></script>
+  <script src="js/config.js?v=20261128z8"></script>
+  <script src="js/gate.js?v=20261128z8"></script>
+  <script src="js/chooser.js?v=20261128z8"></script>
 </body>
 </html>

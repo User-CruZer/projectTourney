@@ -20,6 +20,10 @@
   document.querySelectorAll('#topnav a').forEach((a) => {
     if (a.classList.contains('here')) a.href = location.pathname.split('/').pop() + location.search;
     else if (local && !a.classList.contains('home')) a.href += '?local=1';
+    // The other tournament: ask for its organizer code (or guest), like the start page.
+    if (!a.classList.contains('here') && !a.classList.contains('home')) a.addEventListener('click', (e) => {
+      if (window.HWGate && HWGate.open(a.getAttribute('href').split('?')[0])) e.preventDefault();
+    });
   });
 
   let state = null;

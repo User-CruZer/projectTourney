@@ -35,5 +35,7 @@ const kw = loadBackend(ww), kh = loadBackend(holo);
 ok(kw.draft === 'projectTourney.draft' && kw.log === 'projectTourney.bracketLog', 'WW demo keys unchanged');
 ok(kh.draft === 'projectTourney.hologram.draft' && kh.log === 'projectTourney.hologram.bracketLog', 'hologram demo keys separate');
 
+ok(ww.WW_API_URL === ww.API_URL && holo.WW_API_URL === ww.API_URL, 'both modes know the WW Sheet URL (for the code prompt)');
+
 console.log(fails ? fails + ' failed' : 'all passed');
 process.exit(fails ? 1 : 0);

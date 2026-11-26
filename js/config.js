@@ -11,6 +11,9 @@ const DEMO = new URLSearchParams(location.search).get('local') === '1';
 // Empty = the Hologram pages run in demo mode (data only in this browser).
 const HOLO_API_URL = 'https://script.google.com/macros/s/AKfycbyLwqGgH95Sv9uJXD4SRhJMtrWvl1EIfBvpNK-TJTg6OcwKLbtOmKzNYhjRb7A1-IYz/exec';
 
+// Whimpering Wastes: its Apps Script Web App URL (ends with /exec).
+const WW_API_URL = 'https://script.google.com/macros/s/AKfycbzyAhdNhqwz0Pqp0Ra0G20Dc8zOJemlcvkid81ABQAXKr-ZkGEnE8_rC1ze8ZzFI54mOw/exec';
+
 window.TOURNEY_CONFIG = {
   MODE,
   TITLE: 'HoloWastes',
@@ -28,9 +31,9 @@ window.TOURNEY_CONFIG = {
   // Paste your Google Apps Script Web App URL here (ends with /exec).
   // Leave empty to run in LOCAL DEMO MODE (syncs only between tabs of one browser).
   // Whimpering Wastes uses the URL below; Hologram uses HOLO_API_URL above.
-  API_URL: DEMO ? '' : MODE === 'hologram' ? HOLO_API_URL :
-    'https://script.google.com/macros/s/AKfycbzyAhdNhqwz0Pqp0Ra0G20Dc8zOJemlcvkid81ABQAXKr-ZkGEnE8_rC1ze8ZzFI54mOw/exec',
+  API_URL: DEMO ? '' : MODE === 'hologram' ? HOLO_API_URL : WW_API_URL,
   HOLO_API_URL,
+  WW_API_URL,     // both URLs are known on every page, for the code prompt (js/gate.js)
 
   // Hologram: boss pool. Each match rolls 3 different bosses from this list.
   HOLO_BOSSES: [
