@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Control — HoloWastes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span id="brand">HoloWastes</span> <em>Pick &amp; Ban control</em></div>
+    <div class="topbar-right">
+      <span id="role-badge" class="badge"></span>
+      <span id="conn" class="conn"><i></i><b>Connecting…</b></span>
+    </div>
+  </header>
+
+  <section class="statusbar">
+    <div class="turn-label" id="turn-label">—</div>
+    <div class="turn-meta"><span id="turn-step"></span><span id="timer"></span></div>
+    <div class="coin-info" id="coin-info"></div>
+  </section>
+
+  <main class="layout">
+    <section class="card picker">
+      <div class="picker-head">
+        <h2 id="picker-title">Resonators</h2>
+        <div class="tools">
+          <div class="chips" id="element-filter"></div>
+          <input id="search" type="search" placeholder="Search…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="perma-edit-bar" id="perma-bar" hidden>
+        <span>Editing perma bans — click resonators to toggle, then save.</span>
+        <button id="perma-save" class="primary">Save perma bans</button>
+        <button id="perma-cancel">Cancel</button>
+      </div>
+      <div class="roster" id="roster"></div>
+      <div class="lock-bar" id="lock-bar" hidden>
+        <div class="lock-info" id="lock-info"></div>
+        <button id="lock-btn" class="lock-btn" disabled>Lock in</button>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="card preview">
+        <h2>Stream overlay preview</h2>
+        <div class="preview-frame"><iframe id="preview" title="Overlay preview" tabindex="-1"></iframe></div>
+      </section>
+
+      <section class="card admin" id="admin" hidden>
+        <h2>Admin</h2>
+
+        <div class="group">
+          <h3>Coin toss</h3>
+          <div class="row">
+            <button id="flip-btn" class="primary">Flip coin</button>
+            <span class="hint" id="flip-hint"></span>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Players</h3>
+          <div class="row">
+            <input id="name-a" placeholder="Player A" maxlength="40" />
+            <input id="name-b" placeholder="Player B" maxlength="40" />
+            <button id="save-names">Save</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Scores</h3>
+          <div class="score-grid">
+            <span></span><span class="col">Stage 1</span><span class="col">Stage 2</span>
+            <span class="who A" id="score-label-A">Player A</span>
+            <input id="s-A1" inputmode="decimal" maxlength="12" /><input id="s-A2" inputmode="decimal" maxlength="12" />
+            <span class="who B" id="score-label-B">Player B</span>
+            <input id="s-B1" inputmode="decimal" maxlength="12" /><input id="s-B2" inputmode="decimal" maxlength="12" />
+          </div>
+          <div class="row"><button id="save-scores" class="primary">Save scores</button></div>
+        </div>
+
+        <div class="group">
+          <h3>Perma bans</h3>
+          <div class="row">
+            <button id="perma-edit">Edit perma bans</button>
+            <span class="hint" id="perma-count"></span>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Draft</h3>
+          <div class="row">
+            <button id="undo-btn">Undo last</button>
+            <button id="reset-btn" class="danger">Reset match</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Links</h3>
+          <div class="links" id="admin-links"></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/draft-core.js"></script>
+  <script src="js/backend.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/control.js"></script>
+</body>
+</html>

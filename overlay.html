@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Overlay — HoloWastes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/overlay.css" />
+</head>
+<!--
+  OBS / TikTok Live Studio: add as a Browser / Link source at 1920 x 1080.
+  Background is transparent. Add ?bg=1 for a solid background (previewing).
+-->
+<body>
+  <div class="stage" id="stage">
+    <header class="title"><span class="line"></span><h1 id="title">HOLOWASTES</h1><span class="line"></span></header>
+
+    <section class="perma panel">
+      <div class="label">Perma banned by the system</div>
+      <div class="perma-list" id="perma"></div>
+    </section>
+
+    <section class="row top">
+      <div class="panel player A"><div class="pname" id="name-A"></div><div class="ptotal"><span>Total</span><b id="total-A"></b></div></div>
+      <div class="panel ban A" id="ban-A"></div>
+      <div class="status" id="status">
+        <div class="s-team" id="s-team"></div>
+        <div class="s-action" id="s-action"></div>
+        <div class="s-timer" id="s-timer"></div>
+      </div>
+      <div class="panel ban B" id="ban-B"></div>
+      <div class="panel player B"><div class="ptotal"><span>Total</span><b id="total-B"></b></div><div class="pname" id="name-B"></div></div>
+    </section>
+
+    <section class="row stages">
+      <div class="panel stage-box A" id="stage-A-1"></div>
+      <div class="panel stage-box B" id="stage-B-1"></div>
+    </section>
+    <section class="row stages">
+      <div class="panel stage-box A" id="stage-A-2"></div>
+      <div class="panel stage-box B" id="stage-B-2"></div>
+    </section>
+
+    <div class="coin-layer" id="coin-layer" hidden>
+      <div class="coin" id="coin">
+        <div class="face A"><span id="coin-A"></span></div>
+        <div class="face B"><span id="coin-B"></span></div>
+      </div>
+      <div class="coin-caption" id="coin-caption"></div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/draft-core.js"></script>
+  <script src="js/backend.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/overlay.js"></script>
+</body>
+</html>
