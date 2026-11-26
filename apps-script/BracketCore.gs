@@ -167,7 +167,7 @@ var BracketCore = (function () {
         if (!b.results[id]) throw new Error('This match has no result yet.');
         pp = participants(b, p.r, p.i);
         delete b.results[id];
-        downstream(p.r, p.i).forEach(function (d) { delete b.results[d]; });
+        downstream(p.r, p.i).forEach(function (d) { delete b.results[d]; if (b.current === d) b.current = ''; });
         log = 'Cleared result: ' + pp[0] + ' vs ' + pp[1];
         break;
       }

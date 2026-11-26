@@ -11,7 +11,6 @@
 
   let state = null;
   let clockOffset = 0;
-  let seenFlip = null;
   let lastCount = null;   // number of actions at the previous update
   let freshIdx = -1;      // index of a just-locked action (gets the lock-in animation)
 
@@ -20,12 +19,13 @@
     fitText($('name-B'), 54, 22, 2);
     fitText($('s-team'), 40, 18, 2);
     document.querySelectorAll('.ban-name').forEach((el) => fitText(el, 40, 20));
-    document.querySelectorAll('.slot .nm').forEach((el) => fitText(el, 40, 18, 2));
+    document.querySelectorAll('.slot .nm').forEach((el) => fitText(el, 40, 16, 2));
   }
 
+  // Portrait from img/resonator-img (see js/common.js), or coloured initials if there is none.
   const mono = (name) => {
-    const c = byName[name];
-    return c && c.img ? `<img src="${esc(c.img)}" alt="">` : esc(initials(name));
+    const url = HW.portrait(name);
+    return url ? `<img src="${esc(url)}" alt="">` : esc(initials(name));
   };
 
   function render() {
@@ -96,43 +96,13 @@
     el.classList.toggle('low', t.low);
   }
 
-  // ----- coin toss animation
-  let coinTimers = [];
-  function playCoin(s) {
-    coinTimers.forEach(clearTimeout);
-    const layer = $('coin-layer'), coin = $('coin'), cap = $('coin-caption');
-    $('coin-A').textContent = s.teams.A;
-    $('coin-B').textContent = s.teams.B;
-    cap.classList.remove('show');
-    cap.innerHTML = `<div class="win" style="color:var(--${s.firstTeam.toLowerCase()})">${esc(s.teams[s.firstTeam])} wins the toss</div><div class="sub">Bans &amp; picks first</div>`;
-    layer.hidden = false;
-    layer.classList.remove('out');
-    coin.classList.remove('spin');
-    void coin.offsetWidth;                                    // restart animation
-    coin.style.setProperty('--end', (360 * 6 + (s.firstTeam === 'B' ? 180 : 0)) + 'deg');
-    coin.classList.add('spin');
-    fitText($('coin-A'), 42, 16, 3);
-    fitText($('coin-B'), 42, 16, 3);
-    fitText(cap.querySelector('.win'), 60, 28);
-    coinTimers.push(setTimeout(() => cap.classList.add('show'), 2600));
-    coinTimers.push(setTimeout(() => layer.classList.add('out'), 6200));
-    coinTimers.push(setTimeout(() => { layer.hidden = true; }, 6700));
-  }
+  // Coin toss animation (shared with the screens overlay)
+  const coin = HW.coinToss();
 
   function onState(next) {
     state = next;
     if (next.now) clockOffset = next.now - Date.now();
-    const serverNow = Date.now() + clockOffset;
-    // Play each flip once per browser tab — reloading the page (e.g. switching the
-    // control-page preview) must not replay a toss that was already shown.
-    let played = null;
-    try { played = sessionStorage.getItem('hw.coinPlayed'); } catch (_) {}
-    if (next.flipAt && next.flipAt !== seenFlip && String(next.flipAt) !== played && serverNow - next.flipAt < 8000) {
-      playCoin(next);
-      try { sessionStorage.setItem('hw.coinPlayed', String(next.flipAt)); } catch (_) {}
-    }
-    if (!next.flipAt) $('coin-layer').hidden = true;
-    seenFlip = next.flipAt;
+    coin(next, clockOffset);
     // Animate only an action that was just locked in (not old picks on page load).
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;
@@ -142,6 +112,7 @@
 
   backend.subscribe(onState);
   // Re-fit once the web fonts have loaded (sizes differ from the fallback font).
+  HW.imagesReady.then(() => state && render());   // redraw once portraits are found
   if (document.fonts) {
     // Re-fit text once web fonts arrive (also later ones, e.g. the Noir theme font).
     document.fonts.ready.then(() => state && render());

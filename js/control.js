@@ -9,7 +9,8 @@
   const team = teamParam === 'A' || teamParam === 'B' ? teamParam : null;
   const adminKey = params.get('admin');
   const key = params.get('key') || adminKey || '';
-  const role = adminKey ? 'admin' : team ? 'team' : 'viewer';
+  // let: becomes 'admin' for everyone (without ?team=) when the server has open access (testing).
+  let role = adminKey ? 'admin' : team ? 'team' : 'viewer';
   const local = params.get('local') === '1';
 
   let state = null;
@@ -113,7 +114,7 @@
             ? `<span class="tag ban" title="${esc(s.teams[u.team === 'A' ? 'B' : 'A'])} can't use this">✕ ${esc(s.teams[u.team === 'A' ? 'B' : 'A'])}</span>`
             : `<span class="tag ${u.team}" title="Picked by ${esc(s.teams[u.team])}">${esc(s.teams[u.team])}</span>`).join('');
         }
-        return `<div class="${cls}" style="--el:${elColor(c.name)}" data-name="${esc(c.name)}" title="${esc(c.name)} · ${esc(c.element)}"><span class="nm">${esc(c.name)}</span>${tags}</div>`;
+        return `<div class="${cls}" style="--el:${elColor(c.name)}" data-name="${esc(c.name)}" title="${esc(c.name)} · ${esc(c.element)}">${HW.portrait(c.name) ? `<img class="av" src="${esc(HW.portrait(c.name))}" alt="">` : ''}<span class="nm">${esc(c.name)}</span>${tags}</div>`;
       }).join('');
   }
 
@@ -202,6 +203,7 @@
     if (!next) return;
     const prevLen = state ? state.actions.length : -1;
     state = next;
+    if (next.openAccess && role === 'viewer') { role = 'admin'; updateBadge(); buildAdminLinks(); }
     if (next.now) clockOffset = next.now - Date.now();
     if (next.actions.length !== prevLen) selected = null;
     render();
@@ -217,6 +219,7 @@
       return renderRoster();
     }
     if (el.classList.contains('used') || el.classList.contains('locked')) return;
+    if (e.detail > 1 && name === selected) return;   // 2nd click of a double-click (which locks it in)
     selected = name === selected ? null : name;
     renderRoster(); renderLockBar();
   });
@@ -236,7 +239,8 @@
   });
   $('search').addEventListener('input', (e) => { query = e.target.value; renderRoster(); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.activeElement.tagName !== 'INPUT' && !$('lock-btn').disabled && !$('lock-bar').hidden) $('lock-btn').click();
+    const typing = ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'A'].includes(document.activeElement.tagName);
+    if (e.key === 'Enter' && !typing && !$('lock-btn').disabled && !$('lock-bar').hidden) $('lock-btn').click();
   });
 
   // admin
@@ -276,6 +280,8 @@
   });
   $('save-scores').addEventListener('click', async () => {
     const v = (id) => $(id).value.trim();
+    const bad = ['s-A1', 's-A2', 's-B1', 's-B2'].filter((id) => v(id) !== '' && !isFinite(Number(v(id).replace(/[,\s]/g, ''))));
+    if (bad.length) return toast('Scores must be numbers, e.g. 12500 or 12,500.');
     if (await send({ op: 'setScores', A1: v('s-A1'), A2: v('s-A2'), B1: v('s-B1'), B2: v('s-B2') }, 'Scores saved')) clean('s-A1', 's-A2', 's-B1', 's-B2');
   });
   $('perma-edit').addEventListener('click', () => {
@@ -335,9 +341,12 @@
     c.querySelector('b').textContent = { live: 'Live · Google Sheets', local: 'Local demo mode', offline: 'Reconnecting…' }[e.detail];
   });
 
-  const badge = $('role-badge');
-  badge.className = 'badge ' + (role === 'admin' ? 'admin' : team || '');
-  badge.textContent = role === 'admin' ? 'Admin' : role === 'team' ? `Captain · ${team}` : 'View only';
+  function updateBadge() {
+    const badge = $('role-badge');
+    badge.className = 'badge ' + (role === 'admin' ? 'admin' : team || '');
+    badge.textContent = role === 'admin' ? (adminKey ? 'Admin' : 'Admin · open access') : role === 'team' ? `Captain · ${team}` : 'View only';
+  }
+  updateBadge();
 
   // ---------- bracket (admin)
   const BK = BracketCore;
@@ -465,6 +474,7 @@
     if (armed(e.currentTarget, 'Tap again to reset bracket')) send({ op: 'resetBracket' }, 'Bracket reset').then((ok) => { if (ok) { bkSelected = null; renderBracketAdmin(); } });
   });
   renderFilters();
+  HW.imagesReady.then(() => state && renderRoster());   // show portraits once found
   backend.subscribe(setState);
   buildAdminLinks();
   setInterval(() => state && tick(), 250);

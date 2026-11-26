@@ -5,11 +5,12 @@
  */
 (function (global) {
   // X = coin-toss winner, Y = the other player. [who, type, stage]
-  // 1 ban each, then 3 picks each per stage, alternating.
-  // Stage 2 is started by the player who did NOT start stage 1.
+  // 1) each player's first Stage 1 pick, 2) 1 ban each, 3) the rest of Stage 1 alternating,
+  // 4) Stage 2 (3 each), started by the player who did NOT start Stage 1.
   const FORMAT = [
+    ['X', 'pick', 1], ['Y', 'pick', 1],
     ['X', 'ban', 0], ['Y', 'ban', 0],
-    ['X', 'pick', 1], ['Y', 'pick', 1], ['X', 'pick', 1], ['Y', 'pick', 1], ['X', 'pick', 1], ['Y', 'pick', 1],
+    ['X', 'pick', 1], ['Y', 'pick', 1], ['X', 'pick', 1], ['Y', 'pick', 1],
     ['Y', 'pick', 2], ['X', 'pick', 2], ['Y', 'pick', 2], ['X', 'pick', 2], ['Y', 'pick', 2], ['X', 'pick', 2],
   ];
 
@@ -60,6 +61,7 @@
       if (a.char !== char) continue;
       if (type === 'ban') {
         if (a.type === 'ban' && a.team === team) return false;   // already banned it
+        if (a.type === 'pick' && a.team !== team) return false;  // opponent already picked it
         continue;
       }
       if (a.type === 'ban' && a.team !== team) return false;     // opponent banned it against me

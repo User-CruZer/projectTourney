@@ -61,3 +61,48 @@
 }
 .box.champ.win .nm { color: #fff6d6; }
 .trophy { position: absolute; left: 50%; top: -56px; transform: translateX(-50%); font-size: 42px; filter: drop-shadow(0 0 12px rgba(232, 197, 71, .6)); }
+
+/* ---------- "Live now" panel + "Up next" list (empty space of the champion column) ---------- */
+.live-panel {
+  position: absolute; left: 1556px; width: 340px; top: 170px; height: 318px; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 10px; padding: 18px 20px;
+  background: #121212; border: 1px solid var(--line-2); border-top: 3px solid var(--gold); border-radius: 6px;
+}
+.live-panel.idle { justify-content: center; height: auto; }
+.live-panel.result { border-color: var(--gold); background: linear-gradient(180deg, rgba(232, 197, 71, .12), #121212); }
+.live-panel.flash { animation: lp-flash 1s ease-out; }
+@keyframes lp-flash { 0% { box-shadow: 0 0 0 0 rgba(232, 197, 71, .7); transform: scale(1.03); } 100% { box-shadow: 0 0 0 18px rgba(232, 197, 71, 0); transform: none; } }
+.lp-head { display: flex; align-items: center; gap: 10px; }
+.lp-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ban); animation: lp-blink 1.2s ease-in-out infinite; }
+.result .lp-dot { background: var(--gold); animation: none; }
+@keyframes lp-blink { 50% { opacity: .25; } }
+.lp-round { font-weight: 800; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+.lp-vs { display: grid; gap: 6px; }
+.lp-p {
+  display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px;
+  background: #1a1a1a; border-left: 3px solid var(--a); border-radius: 4px;
+}
+.lp-p.B { border-left-color: var(--b); }
+.lp-p .nm { flex: 1; min-width: 0; font-size: 22px; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+.lp-p b { font-size: 20px; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lp-p.won { border-left-color: var(--gold); }
+.lp-p.won b { color: var(--gold); }
+.lp-p.lost { opacity: .45; }
+.lp-text { font-size: 30px; font-weight: 800; line-height: 1.05; text-transform: uppercase; max-height: 64px; overflow: hidden; margin-top: 4px; }
+.lp-text.A { color: var(--a); } .lp-text.B { color: var(--b); }
+.result .lp-text { color: var(--gold); }
+.lp-text.muted { color: var(--muted); font-size: 22px; }
+.lp-sub { font-size: 14px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.lp-bar { margin-top: auto; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.lp-bar i { display: block; height: 100%; background: var(--gold); transition: width .5s; }
+
+.next-panel {
+  position: absolute; left: 1556px; width: 340px; top: 690px; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 8px; padding: 14px 18px;
+  background: rgba(18, 18, 18, .85); border: 1px solid var(--line); border-radius: 6px;
+}
+.np-head { font-weight: 800; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.np-row { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-top: 1px solid var(--line); }
+.np-round { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.np-vs { font-size: 18px; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+.np-vs em { font-style: normal; color: var(--muted); font-weight: 600; font-size: .8em; margin: 0 4px; }

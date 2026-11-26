@@ -181,10 +181,22 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .toast.info { background: #1d1a10; border-color: var(--gold); color: #f6e7b0; }
 
 @media (max-width: 1100px) {
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .side { min-width: 0; }
+}
+@media (max-width: 600px) {
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .statusbar { padding: 12px 12px 4px; gap: 10px; }
+  .layout { padding: 12px 12px 24px; gap: 12px; }
+  .card { padding: 14px; }
+  .roster { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  #search { width: 100%; }
 }
 
 /* card title row with an action on the right (e.g. Bracket → Reset bracket) */
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .card-head h2 { margin: 0; }
 .card-head .hint { font-size: 12px; }
+
+/* small portrait in the resonator list (only when a picture exists in img/resonator-img) */
+.res .av { flex: none; width: 28px; height: 28px; border-radius: 5px; object-fit: cover; background: var(--el); }

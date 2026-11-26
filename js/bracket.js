@@ -78,11 +78,105 @@
     document.querySelectorAll('.box .nm').forEach((el) => fitText(el, el.closest('.champ') ? 40 : 26, 14));
   }
 
+  // ----- "Live now" panel + "Up next" list (?live=0 hides them)
+  const showLive = new URLSearchParams(location.search).get('live') !== '0';
+  let lastStatusKey = null;     // to flash the panel only when something new happens
+
+  /** What's happening in the loaded match right now: { key, text, sub, progress }. */
+  function phase(s, b, cur) {
+    const res = b.results[b.current];
+    const pp = B.participants(b, cur.r, cur.i);
+    if (res) {
+      const w = pp[res.w === 'A' ? 0 : 1];
+      return cur.r === B.ROUNDS - 1
+        ? { key: 'res', text: `${w} is the champion!`, sub: 'Final result', progress: 1, result: true }
+        : { key: 'res', text: `${w} wins`, sub: `Advances to ${ROUND_NAMES[cur.r + 1]}`, progress: 1, result: true };
+    }
+    if (!s.firstTeam) return { key: 'toss', text: 'Coin toss', sub: 'Getting ready', progress: 0 };
+    const step = DraftCore.currentStep(s);
+    const n = s.actions.length, total = s.sequence.length;
+    if (step) {
+      const who = s.teams[step.team];
+      return step.type === 'ban'
+        ? { key: 'step' + n, text: `${who} is banning`, sub: `Draft · step ${n + 1} of ${total}`, progress: n / total, side: step.team }
+        : { key: 'step' + n, text: `${who} is picking`, sub: `Stage ${step.stage} pick · step ${n + 1} of ${total}`, progress: n / total, side: step.team };
+    }
+    const ta = B.total(s.scores.A), tb = B.total(s.scores.B);
+    if (ta !== null && tb !== null) {
+      return ta === tb
+        ? { key: 'tie', text: 'Scores tied', sub: 'Waiting for the result', progress: 1 }
+        : { key: 'lead', text: `${ta > tb ? s.teams.A : s.teams.B} leads`, sub: 'Waiting for the result', progress: 1 };
+    }
+    return { key: 'play', text: 'Match in progress', sub: 'Draft complete', progress: 1 };
+  }
+
+  function renderLive(s) {
+    const panel = $('live-panel'), next = $('next-panel');
+    panel.hidden = next.hidden = !showLive;
+    if (!showLive) return;
+    const b = s.bracket || B.emptyBracket();
+    const cur = B.parse(b.current);
+
+    let key;
+    if (!cur) {
+      key = 'idle';
+      panel.className = 'live-panel idle';
+      panel.innerHTML = B.champion(b)
+        ? '<div class="lp-head"><span class="lp-round">Tournament complete</span></div><div class="lp-text">Congratulations!</div>'
+        : '<div class="lp-head"><span class="lp-round">Live now</span></div><div class="lp-text muted">Waiting for the next match</div>';
+    } else {
+      const pp = B.participants(b, cur.r, cur.i);
+      const res = b.results[b.current];
+      const ph = phase(s, b, cur);
+      key = b.current + '|' + ph.key + '|' + (res ? res.w : '');
+      const tot = (t) => scoreTotalOrDash(res ? (t === 'A' ? res.sa : res.sb) : null, s.scores[t]);
+      const won = (t) => (res ? (res.w === t ? ' won' : ' lost') : '');
+      panel.className = 'live-panel' + (ph.result ? ' result' : '');
+      panel.innerHTML = `
+        <div class="lp-head"><span class="lp-dot"></span><span class="lp-round">${ph.result ? 'Result' : 'Live now'} · ${esc(ROUND_NAMES[cur.r])} M${cur.i + 1}</span></div>
+        <div class="lp-vs">
+          <div class="lp-p A${won('A')}"><span class="nm">${esc(pp[0])}</span><b>${esc(tot('A'))}</b></div>
+          <div class="lp-p B${won('B')}"><span class="nm">${esc(pp[1])}</span><b>${esc(tot('B'))}</b></div>
+        </div>
+        <div class="lp-text${ph.side ? ' ' + ph.side : ''}">${esc(ph.text)}</div>
+        <div class="lp-sub">${esc(ph.sub)}</div>
+        <div class="lp-bar"><i style="width:${Math.round(ph.progress * 100)}%"></i></div>`;
+      panel.querySelectorAll('.lp-p .nm').forEach((el) => fitText(el, 24, 14));
+      fitText(panel.querySelector('.lp-text'), 30, 16, 2);
+    }
+    // Flash on anything new (not on page load).
+    if (lastStatusKey !== null && key !== lastStatusKey) {
+      panel.classList.remove('flash'); void panel.offsetWidth; panel.classList.add('flash');
+    }
+    lastStatusKey = key;
+
+    // Up next: playable matches without a result, in bracket order (max 4).
+    const ups = [];
+    for (let r = 0; r < B.ROUNDS && ups.length < 4; r++) {
+      for (let i = 0; i < B.count(r) && ups.length < 4; i++) {
+        const id = B.mid(r, i), p = B.participants(b, r, i);
+        if (id !== b.current && p[0] && p[1] && !b.results[id]) ups.push({ r, i, p });
+      }
+    }
+    next.innerHTML = ups.length
+      ? '<div class="np-head">Up next</div>' + ups.map((m) =>
+        `<div class="np-row"><span class="np-round">${esc(ROUND_NAMES[m.r])} M${m.i + 1}</span><span class="np-vs">${esc(m.p[0])} <em>vs</em> ${esc(m.p[1])}</span></div>`).join('')
+      : '';
+    next.hidden = !ups.length;
+    next.querySelectorAll('.np-vs').forEach((el) => fitText(el, 18, 12));
+  }
+
+  /** Total for the live panel: the saved result's score, else the sum of entered stage scores. */
+  function scoreTotalOrDash(saved, stages) {
+    if (saved !== null && saved !== undefined && saved !== '') return scoreTotal([saved]) || String(saved);
+    return scoreTotal(stages) || '–';
+  }
+
   let last = null;
-  backend.subscribe((s) => { last = s; render(s); });
+  backend.subscribe((s) => { last = s; render(s); renderLive(s); });
   if (document.fonts) {
     // Re-fit text once web fonts arrive (also later ones, e.g. the Noir theme font).
-    document.fonts.ready.then(() => last && render(last));
-    document.fonts.addEventListener("loadingdone", () => last && render(last));
+    document.fonts.ready.then(() => last && (render(last), renderLive(last)));
+    document.fonts.addEventListener("loadingdone", () => last && (render(last), renderLive(last)));
   }
 })();

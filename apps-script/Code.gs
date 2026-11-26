@@ -17,11 +17,17 @@
  */
 
 // X = coin-toss winner, Y = the other player. [who, type, stage]
+// 1) first Stage 1 pick each, 2) 1 ban each, 3) rest of Stage 1, 4) Stage 2.
 const FORMAT = [
+  ['X', 'pick', 1], ['Y', 'pick', 1],
   ['X', 'ban', 0], ['Y', 'ban', 0],
-  ['X', 'pick', 1], ['Y', 'pick', 1], ['X', 'pick', 1], ['Y', 'pick', 1], ['X', 'pick', 1], ['Y', 'pick', 1],
+  ['X', 'pick', 1], ['Y', 'pick', 1], ['X', 'pick', 1], ['Y', 'pick', 1],
   ['Y', 'pick', 2], ['X', 'pick', 2], ['Y', 'pick', 2], ['X', 'pick', 2], ['Y', 'pick', 2], ['X', 'pick', 2],
 ];
+
+// Testing switch: false = anyone with the link can do everything (no admin/captain keys).
+// Set back to true before the real tournament, then deploy a new version.
+const REQUIRE_KEYS = false;
 
 const UNIQUE_PICKS = false;  // false = both players may pick the same resonator (mirror picks)
 const CACHE_KEY = 'draft-state-v2';
@@ -234,6 +240,7 @@ function readState_() {
     permaBans: parseJson_(meta.permaBans, []),
     scores: parseJson_(meta.scores, emptyScores_()),
     uniquePicks: UNIQUE_PICKS,
+    openAccess: !REQUIRE_KEYS,
     bracket: parseJson_(meta.bracket, BracketCore.emptyBracket()),
     bracketLog: lastBracketLog_(),
     turnStartedAt: Number(meta.turnStartedAt) || Date.now(),
@@ -255,7 +262,7 @@ function isAvailable_(state, ch, team, type) {
   if (state.permaBans.indexOf(ch) >= 0) return false;
   return !state.actions.some((a) => {
     if (a.char !== ch) return false;
-    if (type === 'ban') return a.type === 'ban' && a.team === team;
+    if (type === 'ban') return a.team === team ? a.type === 'ban' : a.type === 'pick';   // own repeat ban / opponent's pick
     if (a.type === 'ban') return a.team !== team;
     return a.team === team || UNIQUE_PICKS;
   });
@@ -283,7 +290,7 @@ function persistFull_(prev, next) {
 
 /** Read-only "Bracket" tab so organizers can see the bracket in the Sheet. */
 function writeBracketView_(b) {
-  const ROUND_NAMES = ['Babak 16', 'Perempat Final', 'Semifinal', 'Final'];
+  const ROUND_NAMES = ['Penyisihan', 'Perempat Final', 'Semifinal', 'Final'];
   const sh = sheetOrCreate_('Bracket', null);
   const rows = [['VIEW ONLY: change the bracket from the admin control page', '', '', '', '', '', ''],
     ['Round', 'Match', 'Top player', 'Top score', 'Bottom player', 'Bottom score', 'Winner']];
@@ -319,6 +326,7 @@ function sheetOrCreate_(name, header) {
 /* ------------------------------------------------------------------ utils */
 
 function authorize_(key) {
+  if (!REQUIRE_KEYS) return 'admin';   // open access while testing
   if (!key) return null;
   const p = PropertiesService.getScriptProperties();
   if (key === p.getProperty('ADMIN_KEY')) return 'admin';

@@ -50,7 +50,7 @@
 
 /* ---------- team panels under each window ---------- */
 .team {
-  position: absolute; top: 672px; width: 924px; height: 384px;
+  position: absolute; top: 718px; width: 924px; height: 338px;
   display: flex; flex-direction: column; gap: 12px; padding: 16px 24px 20px;
 }
 .team.A { left: 24px; }
@@ -78,28 +78,49 @@
 .row-score span { font-size: 13px; font-weight: 700; letter-spacing: .18em; color: var(--muted); text-transform: uppercase; }
 .row-score b { font-size: 38px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
-/* compact horizontal pick cards */
+/* pick cards: portrait on top, name underneath */
 .pick {
-  position: relative; display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 14px;
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 6px 8px 8px; text-align: center;
   overflow: hidden; min-width: 0;
   background: #121212; border: 1px dashed var(--line-2); border-radius: 6px;
 }
-.pick.filled { border: 1px solid var(--line-2); background: linear-gradient(90deg, color-mix(in srgb, var(--el) 14%, #151515), #121212); }
-.pick.filled::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--el); }
+.pick.filled { border: 1px solid var(--line-2); background: linear-gradient(180deg, color-mix(in srgb, var(--el) 14%, #151515), #121212); }
+.pick.filled::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--el); }
 .pick .mono {
-  flex: none; width: 54px; height: 54px; border-radius: 8px; display: grid; place-items: center; overflow: hidden;
-  font-weight: 800; font-size: 22px; color: var(--ink); background: var(--el);
+  flex: none; width: 76px; height: 76px; border-radius: 8px; display: grid; place-items: center; overflow: hidden;
+  font-weight: 800; font-size: 30px; color: var(--ink); background: var(--el);
 }
 .pick .mono img { width: 100%; height: 100%; object-fit: cover; }
-.pick .nm { flex: 1; font-size: 22px; font-weight: 700; text-transform: uppercase; line-height: 1; min-width: 0; max-height: 62px; overflow: hidden; }
+.pick .nm { flex: none; width: 100%; font-size: 18px; font-weight: 700; text-transform: uppercase; line-height: 1; max-height: 20px; overflow: hidden; }
 .pick .wait { color: #4a4a4a; font-size: 16px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin: auto; }
 .pick.active { border: 2px solid var(--gold); }
 .pick.active .wait { color: var(--gold); }
 
 /* single-stage mode (?stage=1|2): one bigger row */
 .single .stage-row { grid-template-columns: 110px 1fr 180px; }
-.single .pick { flex-direction: column; justify-content: center; gap: 12px; padding: 14px 10px; text-align: center; }
-.single .pick.filled::before { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 3px; }
-.single .pick .mono { width: 92px; height: 92px; font-size: 38px; }
+.single .pick { gap: 12px; padding: 14px 10px; }
+.single .pick .mono { width: 128px; height: 128px; font-size: 50px; }
 .single .pick .nm { flex: none; width: 100%; font-size: 30px; max-height: 66px; }
 .single .row-score b { font-size: 48px; }
+
+/* ---------- lock-in moments (same feel as the draft overlay; keyframes live in overlay.css) ---------- */
+.pick.fresh { animation: slam .55s cubic-bezier(.2, 1.4, .4, 1); }
+.pick.fresh::after { content: ''; position: absolute; inset: 0; background: var(--el); animation: flash .7s ease-out forwards; }
+.ban-chip .nm { display: inline-block; }
+.ban-chip.fresh .nm { animation: stamp .5s cubic-bezier(.2, 1.4, .4, 1); }
+/* whose turn to ban: gold pulse on the chip of the player being banned against */
+.ban-chip.active { color: var(--gold); padding: 2px 10px 2px 4px; border-radius: 6px; }
+.ban-chip.active .nm { text-decoration: none; color: var(--gold); }
+
+/* ---------- perma-ban strip between the screen windows and the team panels ---------- */
+.perma-strip {
+  position: absolute; left: 24px; right: 24px; top: 666px; height: 42px;
+  display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 18px;
+  border-top: 2px solid var(--ban);
+}
+.perma-strip .label { color: var(--muted); flex: none; }
+.perma-strip .perma-list { flex-wrap: nowrap; max-height: none; overflow: hidden; gap: 8px; }
+.perma-strip .chip { font-size: 17px; padding: 2px 12px 2px 10px; gap: 8px; }
+.perma-strip .chip i { width: 9px; height: 9px; }
+.perma-strip .none { font-size: 16px; }

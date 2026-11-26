@@ -15,6 +15,29 @@
   const initials = (name) => String(name).replace(/\(.*?\)/g, '').trim()
     .split(/\s+/).map((w) => w[0] || '').join('').slice(0, 2).toUpperCase();
 
+  // ---------- resonator portraits ----------
+  // Put pictures in img/resonator-img/ named by the resonator's slug, e.g.
+  // "Rover (Spectro)" → rover-spectro.png, "Yangyang: Xuanling" → yangyang-xuanling.webp.
+  // Each name is probed once at load (webp, png, jpg); missing ones keep their initials.
+  const IMG_DIR = cfg.IMG_DIR || 'img/resonator-img';
+  const IMG_EXTS = ['webp', 'png', 'jpg'];
+  const slug = (name) => String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const portraits = {};                                   // name -> url (only found ones)
+  const probe = (url) => new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => resolve(url);
+    im.onerror = () => resolve(null);
+    im.src = url;
+  });
+  const imagesReady = Promise.all(cfg.ROSTER.map(async (c) => {
+    if (c.img) { portraits[c.name] = c.img; return; }      // explicit img in config wins
+    for (const ext of IMG_EXTS) {
+      const url = `${IMG_DIR}/${slug(c.name)}.${ext}`;
+      if (await probe(url)) { portraits[c.name] = url; return; }
+    }
+  }));
+  const portrait = (name) => portraits[name] || null;
+
   const element = (name) => (byName[name] || {}).element || '';
   const elColor = (name) => cfg.ELEMENTS[element(name)] || '#8a93ad';
 
@@ -69,6 +92,58 @@
     }
   }
 
+  /**
+   * Coin-toss animation shared by the overlays (draft and screens). Uses #coin-layer
+   * inside #stage, adding it if the page doesn't have one. Returns update(state, clockOffset),
+   * to be called on every state update: it plays each new flip once.
+   */
+  function coinToss() {
+    const $ = (id) => document.getElementById(id);
+    if (!$('coin-layer')) {
+      $('stage').insertAdjacentHTML('beforeend',
+        '<div class="coin-layer" id="coin-layer" hidden><div class="coin" id="coin">' +
+        '<div class="face A"><span id="coin-A"></span></div><div class="face B"><span id="coin-B"></span></div>' +
+        '</div><div class="coin-caption" id="coin-caption"></div></div>');
+    }
+    const layer = $('coin-layer'), coin = $('coin'), cap = $('coin-caption');
+    let timers = [];
+    let seen = null;
+
+    function play(s) {
+      timers.forEach(clearTimeout);
+      $('coin-A').textContent = s.teams.A;
+      $('coin-B').textContent = s.teams.B;
+      cap.classList.remove('show');
+      cap.innerHTML = `<div class="win" style="color:var(--${s.firstTeam.toLowerCase()})">${esc(s.teams[s.firstTeam])} wins the toss</div><div class="sub">Picks &amp; bans first</div>`;
+      layer.hidden = false;
+      layer.classList.remove('out');
+      coin.classList.remove('spin');
+      void coin.offsetWidth;                                    // restart animation
+      coin.style.setProperty('--end', (360 * 6 + (s.firstTeam === 'B' ? 180 : 0)) + 'deg');
+      coin.classList.add('spin');
+      fitText($('coin-A'), 42, 16, 3);
+      fitText($('coin-B'), 42, 16, 3);
+      fitText(cap.querySelector('.win'), 60, 28);
+      timers.push(setTimeout(() => cap.classList.add('show'), 2600));
+      timers.push(setTimeout(() => layer.classList.add('out'), 6200));
+      timers.push(setTimeout(() => { layer.hidden = true; }, 6700));
+    }
+
+    return function update(next, clockOffset) {
+      const serverNow = Date.now() + (clockOffset || 0);
+      // Play each flip once per browser tab: reloading the page (e.g. switching the
+      // control-page preview) must not replay a toss that was already shown.
+      let played = null;
+      try { played = sessionStorage.getItem('hw.coinPlayed'); } catch (_) {}
+      if (next.flipAt && next.flipAt !== seen && String(next.flipAt) !== played && serverNow - next.flipAt < 8000) {
+        play(next);
+        try { sessionStorage.setItem('hw.coinPlayed', String(next.flipAt)); } catch (_) {}
+      }
+      if (!next.flipAt) layer.hidden = true;
+      seen = next.flipAt;
+    };
+  }
+
   /** Keeps a fixed 1920x1080 .stage element scaled to fit the window (letterboxed). */
   function fitCanvas(stage) {
     let warn = null;
@@ -96,11 +171,15 @@
   // Demo mode (?local=1) keeps data only in this browser — make that impossible to miss,
   // so nobody runs the real match (or an OBS source) on practice data by accident.
   if (!cfg.API_URL && global.self === global.top) {   // not inside the control page's preview
-    const live = location.pathname + location.search.replace(/([?&])local=1(&|$)/, (m, a, b) => (b ? a : '')).replace(/\?$/, '');
+    // Same page without demo mode. Drop the demo placeholder admin=1 too (it isn't a real key).
+    const lp = new URLSearchParams(location.search);
+    lp.delete('local');
+    if (lp.get('admin') === '1') lp.delete('admin');
+    const live = location.pathname + (lp.toString() ? '?' + lp : '');
     const bar = document.createElement('div');
     bar.className = 'demo-banner';
     bar.innerHTML = 'DEMO MODE: practice data saved only in this browser, NOT the Google Sheet. ' +
-      'For the real match use the link without <b>local=1</b> (admins: <b>?admin=</b> your ADMIN_KEY). ' +
+      'For the real match use the link without <b>local=1</b>. ' +
       `<a href="${esc(live)}">Open without demo mode</a>`;
     bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:999;padding:8px 14px;text-align:center;' +
       'background:#e5484d;color:#fff;font:700 15px/1.3 Inter,system-ui,sans-serif;letter-spacing:.02em';
@@ -109,5 +188,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas, coinToss, slug, portrait, imagesReady, IMG_DIR };
 })(window);

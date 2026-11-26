@@ -44,8 +44,14 @@
       return data.state;
     }
 
+    // version = "<counter>:<hash>". A poll that started before a save can answer after it
+    // with the older state; skip it, or the page would briefly jump back (and replay animations).
+    let lastCounter = -1;
     function emit(state) {
       if (state.version === lastVersion) return;
+      const counter = parseInt(String(state.version), 10);
+      if (isFinite(counter) && counter < lastCounter) return;
+      if (isFinite(counter)) lastCounter = counter;
       lastVersion = state.version;
       listeners.forEach((cb) => cb(state));
     }
@@ -63,7 +69,13 @@
 
     function subscribe(cb) {
       listeners.push(cb);
-      if (!timer) poll();
+      if (!timer) {
+        poll();
+        // Hidden pages (and OBS sources in another scene) poll slowly; catch up as soon as they show.
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) { clearTimeout(timer); poll(); }
+        });
+      }
     }
 
     return { mode: 'sheets', getState, send, subscribe };

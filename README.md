@@ -7,14 +7,23 @@ Tournament helper for Wuthering Waves: a live pick & ban system with a 16:9 stre
 
 ## Match format
 
-1. **Coin toss**: the admin flips the coin and the winner bans and picks first. The overlay plays the toss animation.
-2. **Bans**: 1 ban per player (winner first). A banned resonator can't be picked by anyone.
-3. **Stage 1**: 3 picks each, alternating, with the toss winner picking first.
-4. **Stage 2**: 3 picks each, alternating, with the other player picking first.
-5. **Scores**: the admin enters each player's score per stage. The overlay shows the totals.
+1. **Coin toss**: the admin flips the coin. The winner goes first in each phase below, and the overlay plays the toss animation.
+2. **First picks**: each player picks their first Stage 1 resonator, the toss winner first.
+3. **Bans**: 1 ban each, the toss winner first.
+   - A ban only blocks the **opponent**; the player who banned it can still pick it.
+   - You can't ban a resonator your opponent has already picked.
+4. **Rest of Stage 1**: 2 more picks each, alternating, the toss winner first (3 Stage 1 picks each in total).
+5. **Stage 2**: 3 picks each, alternating, with the other player picking first.
+6. **Scores**: the admin enters each player's score per stage. The overlay shows the totals.
 
-**Perma bans** are set by the admin. Those resonators can't be banned or picked.
+Both players may pick the same resonator (mirror picks), but nobody can pick the same one twice.
+**Perma bans** are set by the admin. Those resonators can't be banned or picked by anyone.
 To change the order, edit `FORMAT` in `js/draft-core.js` **and** in `apps-script/Code.gs`.
+
+## Access (testing vs tournament)
+Right now **open access is on** (`REQUIRE_KEYS = false` in `apps-script/Code.gs`). Anyone with the control page link can do everything (draft, scores, bracket) without a key, and the badge shows "Admin · open access".
+
+**Before the real tournament**, set `REQUIRE_KEYS = true` in the Apps Script and deploy a new version. The keys below are then required again. This matters because the Apps Script URL is visible in `js/config.js`, so anyone could otherwise change your data.
 
 ## Links
 
@@ -47,7 +56,12 @@ Tip: in OBS, open a capture's **Edit Transform** (Ctrl+E) and type the numbers i
 - `?bg=1`: solid background for previewing.
 
 ### Bracket (`bracket.html`)
-This is a 16-player single-elimination bracket (Babak 16 → Perempat Final → Semifinal → Final → Juara) that fills itself in as results are confirmed. Add it in OBS as a Browser source at 1920×1080.
+This is a 16-player single-elimination bracket (Penyisihan → Perempat Final → Semifinal → Final → Juara) that fills itself in as results are confirmed. Add it in OBS as a Browser source at 1920×1080.
+
+The right-hand column shows where the tournament is right now:
+- **Live now:** the loaded match (round and match number, both players and their totals) and what is happening in it: coin toss, who is banning or picking (with a step counter and progress bar), who leads once the scores are in, and finally "X wins · advances to …". The panel flashes briefly whenever this changes.
+- **Up next:** the next matches that are ready to play.
+- Add `?live=0` to the URL to hide both.
 
 On the admin control page, under **Bracket**:
 1. **Players (16):** enter the names in bracket order (1 vs 2, 3 vs 4, …). You can fix them at any time; results follow the slot, so a typo fix updates every round.
@@ -82,10 +96,11 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
 
 ## After changing CSS or JS files
-The HTML pages load every CSS/JS file with a version tag (`?v=20261126w`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261126w`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
+The HTML pages load every CSS/JS file with a version tag (`?v=20261127j`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127j`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
-- Title, roster, elements and portraits: `js/config.js` (add `img: 'assets/…png'` to show a portrait instead of initials).
+- Title, roster and elements: `js/config.js`.
+- Portraits: put one picture per resonator in `img/resonator-img/`, named as listed in [`img/resonator-img/README.md`](img/resonator-img/README.md) (for example `rover-spectro.webp`; `.webp`, `.png` or `.jpg`). They're picked up automatically on the overlays and the control page; resonators without a picture keep their coloured initials.
 - Turn timer: `TURN_SECONDS` in `js/config.js` (display only; `0` hides it).
 - Look: "Noir minimal" (black and white with a gold accent, Inter font).
   - Colours: `THEME` in `js/config.js` sets the Player A, Player B, ban and champion/accent colours for every page.
