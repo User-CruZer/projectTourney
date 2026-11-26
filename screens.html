@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/theme.css?v=20261127k" />
-  <link rel="stylesheet" href="css/overlay.css?v=20261127k" />
-  <link rel="stylesheet" href="css/screens.css?v=20261127k" />
+  <link rel="stylesheet" href="css/theme.css?v=20261127m" />
+  <link rel="stylesheet" href="css/overlay.css?v=20261127m" />
+  <link rel="stylesheet" href="css/screens.css?v=20261127m" />
 </head>
 <!--
   Screen-share overlay. OBS / TikTok Live Studio: Browser/Link source at 1920 x 1080,
@@ -18,6 +18,7 @@
     Player B window: x 972, y 128, 924 x 520
   URL options:  ?stage=1 or ?stage=2  show only that stage's picks
                 ?guides=1             fill the windows with alignment guides
+                ?stage=1|2 also leaves a chat window between the team panels: 380 x 338 at x 770, y 718 (?chat=0 hides it)
                 ?bg=0                 no background (the windows are always see-through)
 -->
 <body>
@@ -47,13 +48,15 @@
 
     <section class="panel team A" id="team-A"></section>
     <section class="panel team B" id="team-B"></section>
+    <!-- ?stage=1|2 only: framed box with a gradient background between the team panels, for a chat source placed ABOVE the overlay -->
+    <div class="chat-slot" id="chat-slot" hidden><div class="guide" id="guide-chat"></div></div>
   </div>
 
-  <script src="js/config.js?v=20261127k"></script>
-  <script src="js/bracket-core.js?v=20261127k"></script>
-  <script src="js/draft-core.js?v=20261127k"></script>
-  <script src="js/backend.js?v=20261127k"></script>
-  <script src="js/common.js?v=20261127k"></script>
-  <script src="js/screens.js?v=20261127k"></script>
+  <script src="js/config.js?v=20261127m"></script>
+  <script src="js/bracket-core.js?v=20261127m"></script>
+  <script src="js/draft-core.js?v=20261127m"></script>
+  <script src="js/backend.js?v=20261127m"></script>
+  <script src="js/common.js?v=20261127m"></script>
+  <script src="js/screens.js?v=20261127m"></script>
 </body>
 </html>

@@ -124,3 +124,23 @@
 .perma-strip .chip { font-size: 17px; padding: 2px 12px 2px 10px; gap: 8px; }
 .perma-strip .chip i { width: 9px; height: 9px; }
 .perma-strip .none { font-size: 16px; }
+
+/* ---------- chat window between the team panels (?stage=1|2; ?chat=0 hides it) ---------- */
+.with-chat .team.A { width: 726px; }
+.with-chat .team.B { left: 1170px; width: 726px; }
+.with-chat .single .stage-row { grid-template-columns: 76px 1fr 128px; }
+.with-chat .single .row-label b { font-size: 34px; }
+.with-chat .single .row-score b { font-size: 38px; }
+.with-chat .single .pick { padding: 12px 8px; }
+.with-chat .single .pick .mono { width: 108px; height: 108px; font-size: 42px; }
+.with-chat .single .pick .nm { font-size: 24px; max-height: 52px; }
+.chat-slot {
+  position: absolute; left: 770px; top: 718px; width: 380px; height: 338px; --c: var(--line-2);
+  /* same look as the canvas background: grey in the middle fading to black */
+  background: radial-gradient(ellipse at center, #3a3a3a 0%, #1c1c1c 45%, #030303 100%);
+  box-shadow: 0 0 0 2px var(--c), 0 0 0 7px #0b0b0b, 0 10px 30px rgba(0,0,0,.5);
+}
+.chat-slot[hidden] { display: none; }
+.chat-slot::before, .chat-slot::after { content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid var(--gold); }
+.chat-slot::before { left: -8px; top: -8px; border-right: 0; border-bottom: 0; }
+.chat-slot::after { right: -8px; bottom: -8px; border-left: 0; border-top: 0; }

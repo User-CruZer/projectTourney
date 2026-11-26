@@ -11,7 +11,17 @@
   $('title').textContent = cfg.TITLE || 'Pick & Ban';
   $('stage-tag').textContent = only ? `Stage ${only}` : 'VS';
   HW.fitCanvas($('stage'));
-  HW.backdrop($('stage'), [[24, 128, 924, 520], [972, 128, 924, 520]]);   // the two screen-share windows stay clear
+  // Single-stage scenes leave a see-through window between the team panels for a chat source.
+  const CHAT = [770, 718, 380, 338];   // x, y, width, height on the 1920x1080 canvas
+  const chat = only && params.get('chat') !== '0';
+  if (chat) {
+    $('stage').classList.add('with-chat');
+    $('chat-slot').hidden = false;
+    $('guide-chat').innerHTML = `<div>Chat<small>${CHAT[2]} × ${CHAT[3]} · x ${CHAT[0]} · y ${CHAT[1]}</small></div>`;
+  }
+  // The two screen-share windows stay clear. The chat window has its own background
+  // (css/screens.css), so a chat source with no background of its own still reads well.
+  HW.backdrop($('stage'), [[24, 128, 924, 520], [972, 128, 924, 520]]);
 
   let state = null;
   let clockOffset = 0;

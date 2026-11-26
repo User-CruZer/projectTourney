@@ -52,6 +52,7 @@ In OBS, add the browser source **above** the two screen captures and set its **W
 
 Tip: in OBS, open a capture's **Edit Transform** (Ctrl+E) and type the numbers in. URL options:
 - `?stage=1` / `?stage=2`: show only that stage's team, larger. Handy as one OBS scene per stage.
+  These scenes also have a **chat box** between the two team panels: **X 770, Y 718, Width 380, Height 338**, with a dark gradient background. Put your chat source there, **above** the overlay in the source list. Add `&chat=0` to drop it and use the full-width team panels.
 - `?guides=1`: fill the windows with striped guides while you line the captures up.
 - `?bg=0`: no background (fully transparent apart from the panels).
 
@@ -96,7 +97,7 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
 
 ## After changing CSS or JS files
-The HTML pages load every CSS/JS file with a version tag (`?v=20261127k`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127k`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
+The HTML pages load every CSS/JS file with a version tag (`?v=20261127m`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127m`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
 - Title, roster and elements: `js/config.js`.
