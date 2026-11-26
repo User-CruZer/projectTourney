@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
 
   if (new URLSearchParams(location.search).get('bg') === '1') document.body.classList.add('bg');
-  $('title').textContent = cfg.TITLE || 'Pick & Ban';
+  HW.brand($('title'));
   document.title = 'Bracket — ' + (cfg.TITLE || 'Pick & Ban');
   HW.fitCanvas($('stage'));
   HW.backdrop($('stage'));
@@ -13,10 +13,13 @@
   const ROUND_NAMES = cfg.ROUND_NAMES || ['Round of 16', 'Quarterfinal', 'Semifinal', 'Final', 'Champion'];
 
   // ----- geometry on the 1920x1080 canvas (5 columns: 16, 8, 4, 2, 1 boxes)
-  const LEFT = 64, W = 280, GAP = 98, TOP = 160, H = 42, CHAMP_H = 76;
+  // With the logo (bigger header) the bracket starts lower and its rows are a little tighter.
+  const withLogo = document.documentElement.classList.contains('with-logo');
+  const LEFT = 64, W = 280, GAP = 98, H = 42, CHAMP_H = 76;
+  const TOP = withLogo ? 214 : 160, STEP = withLogo ? 48 : 50, PAIR_GAP = withLogo ? 10 : 12;
   const colX = (c) => LEFT + c * (W + GAP);
   const centers = [[]];
-  for (let j = 0; j < 16; j++) centers[0].push(TOP + j * 50 + Math.floor(j / 2) * 12 + H / 2);
+  for (let j = 0; j < 16; j++) centers[0].push(TOP + j * STEP + Math.floor(j / 2) * PAIR_GAP + H / 2);
   for (let c = 1; c <= 4; c++) {
     centers[c] = [];
     for (let j = 0; j < centers[c - 1].length / 2; j++) centers[c].push((centers[c - 1][2 * j] + centers[c - 1][2 * j + 1]) / 2);
@@ -111,6 +114,25 @@
     return { key: 'play', text: 'Match in progress', sub: 'Draft complete', progress: 1 };
   }
 
+  // ----- break timer: replaces the live panel while it runs (+1 minute of "Starting soon")
+  let clockOffset = 0;
+  const AFTER_MS = 60000;
+  function breakPhase(s) {
+    if (!s.breakUntil) return '';
+    const left = s.breakUntil - (Date.now() + clockOffset);
+    return left > 0 ? 'run' : left > -AFTER_MS ? 'end' : '';
+  }
+  /** The match people are waiting for: the loaded one if undecided, else the next playable one. */
+  function nextMatch(b) {
+    const cur = B.parse(b.current);
+    if (cur && !b.results[b.current]) return { r: cur.r, i: cur.i, p: B.participants(b, cur.r, cur.i) };
+    for (let r = 0; r < B.ROUNDS; r++) for (let i = 0; i < B.count(r); i++) {
+      const p = B.participants(b, r, i);
+      if (p[0] && p[1] && !b.results[B.mid(r, i)]) return { r, i, p };
+    }
+    return null;
+  }
+
   function renderLive(s) {
     const panel = $('live-panel'), next = $('next-panel');
     panel.hidden = next.hidden = !showLive;
@@ -119,7 +141,19 @@
     const cur = B.parse(b.current);
 
     let key;
-    if (!cur) {
+    const bp = breakPhase(s);
+    if (bp) {
+      key = 'break-' + bp + '-' + s.breakUntil;
+      const nm = nextMatch(b);
+      panel.className = 'live-panel break' + (bp === 'end' ? ' ended' : '');
+      panel.innerHTML = `
+        <div class="lp-head"><span class="lp-dot"></span><span class="lp-round">${esc(s.breakLabel || 'Break')}</span></div>
+        <div class="lp-clock" id="lp-clock">${bp === 'run' ? HW.clock(s.breakUntil - (Date.now() + clockOffset)) : 'Starting soon'}</div>
+        ${nm ? `<div class="lp-sub">Next · ${esc(ROUND_NAMES[nm.r])} M${nm.i + 1}</div>
+        <div class="lp-next"><span class="nm">${esc(nm.p[0])}</span><em>vs</em><span class="nm">${esc(nm.p[1])}</span></div>` : ''}`;
+      panel.querySelectorAll('.lp-next .nm').forEach((el) => fitText(el, 22, 12));
+      if (bp === 'end') fitText($('lp-clock'), 64, 28);
+    } else if (!cur) {
       key = 'idle';
       panel.className = 'live-panel idle';
       panel.innerHTML = B.champion(b)
@@ -174,7 +208,20 @@
   }
 
   let last = null;
-  backend.subscribe((s) => { last = s; render(s); renderLive(s); });
+  let lastBreak = '';
+  backend.subscribe((s) => {
+    last = s;
+    if (s.now) clockOffset = s.now - Date.now();
+    lastBreak = breakPhase(s);
+    render(s); renderLive(s);
+  });
+  // Tick the break countdown; redraw the panel when it starts, ends or hides.
+  setInterval(() => {
+    if (!last) return;
+    const bp = breakPhase(last);
+    if (bp !== lastBreak) { lastBreak = bp; renderLive(last); return; }
+    if (bp === 'run' && $('lp-clock')) $('lp-clock').textContent = HW.clock(last.breakUntil - (Date.now() + clockOffset));
+  }, 250);
   if (document.fonts) {
     // Re-fit text once web fonts arrive (also later ones, e.g. the Noir theme font).
     document.fonts.ready.then(() => last && (render(last), renderLive(last)));

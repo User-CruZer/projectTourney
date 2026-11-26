@@ -76,6 +76,7 @@ This is a 16-player single-elimination bracket (Penyisihan → Perempat Final �
 The right-hand column shows where the tournament is right now:
 - **Live now:** the loaded match (round and match number, both players and their totals) and what is happening in it: coin toss, who is banning or picking (with a step counter and progress bar), who leads once the scores are in, and finally "X wins · advances to …". The panel flashes briefly whenever this changes.
 - **Up next:** the next matches that are ready to play.
+- **Break timer:** on the control page, admin panel → **Break timer**. Click **3 / 5 / 10 min**, or type your own time (`7` = 7 minutes, `2.5`, or `4:30`) and press **Start**. An optional label (for example "Ishoma") replaces the word "Break". While it runs, the Live now panel shows a big countdown and the next match. **+1 min** extends it and **Stop** ends it. When time is up it shows "Starting soon" for one minute, then goes back to the normal panel by itself.
 - Add `?live=0` to the URL to hide both.
 
 On the admin control page, under **Bracket**:
@@ -111,10 +112,11 @@ After editing `Code.gs`, go to **Deploy → Manage deployments → Edit → Vers
 Push to GitHub, then go to **Settings → Pages → Deploy from a branch → `main` / root**.
 
 ## After changing CSS or JS files
-The HTML pages load every CSS/JS file with a version tag (`?v=20261127m`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127m`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
+The HTML pages load every CSS/JS file with a version tag (`?v=20261127u`) so browsers and OBS don't mix old cached files with new ones. If you change any file in `css/` or `js/`, change the tag in `index.html`, `overlay.html` and `screens.html` to a new value, for example `?v=20261127u`. If a page ever looks unstyled or empty, press **Ctrl+Shift+R**, or **Refresh** the source in OBS.
 
 ## Customizing
 - Title, roster and elements: `js/config.js`.
+- Logo: `img/logo.png` (transparent PNG) replaces the title text on the draft overlay, bracket overlay and control page (the screens overlay keeps the text title, as the logo would be too small there), set by `LOGO` in `js/config.js`. To change it, replace that file (keep the transparent background) and bump the `?v=` tag; remove the `LOGO` line to show the `TITLE` text instead.
 - Portraits: put one picture per resonator in `img/resonator-img/`, named as listed in [`img/resonator-img/README.md`](img/resonator-img/README.md) (for example `rover-spectro.webp`; `.webp`, `.png` or `.jpg`). They're picked up automatically on the overlays and the control page; resonators without a picture keep their coloured initials.
 - Turn timer: `TURN_SECONDS` in `js/config.js` (display only; `0` hides it).
 - Look: "Noir minimal" (black and white with a gold accent, Inter font).

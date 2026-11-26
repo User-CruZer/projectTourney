@@ -106,3 +106,26 @@
 .np-round { font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .np-vs { font-size: 18px; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
 .np-vs em { font-style: normal; color: var(--muted); font-weight: 600; font-size: .8em; margin: 0 4px; }
+
+/* break timer (replaces the live panel content while it runs) */
+.live-panel.break { justify-content: center; align-items: center; text-align: center; border-top-color: var(--gold); }
+.live-panel.break .lp-head { justify-content: center; }
+.live-panel.break .lp-dot { background: var(--gold); }
+.lp-clock {
+  font-size: 96px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  color: #fff; margin: 6px 0 10px; white-space: nowrap; max-width: 100%;
+}
+.ended .lp-clock { font-size: 52px; color: var(--gold); text-transform: uppercase; animation: lp-blink 1.2s ease-in-out infinite; }
+.lp-next { display: flex; align-items: baseline; justify-content: center; gap: 10px; width: 100%; margin-top: 4px; }
+.lp-next .nm { min-width: 0; max-width: 42%; font-size: 22px; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+.lp-next em { font-style: normal; font-size: 14px; color: var(--muted); font-weight: 700; }
+
+/* logo instead of the title text */
+.bk-title h1.has-logo { padding: 0; display: flex; justify-content: center; }
+.with-logo .bk-title { top: 6px; height: auto; }
+.bk-title h1.has-logo .brand-logo { height: 150px; }
+.bk-title h1.has-logo + .sub { margin-top: 2px; }
+/* everything below the header moves down to make room (js/bracket.js moves the boxes) */
+.with-logo .col-head { top: 186px; }
+.with-logo .live-panel { top: 214px; height: 306px; }
+.with-logo .next-panel { top: 700px; }

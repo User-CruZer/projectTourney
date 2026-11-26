@@ -44,6 +44,17 @@ body.bg { background: var(--bg); }
   margin: 0; font-weight: 800; font-size: 46px; line-height: 1;
   letter-spacing: .38em; padding-left: .38em; text-transform: uppercase; color: var(--text);
 }
+/* logo instead of the title text (cfg.LOGO) */
+.brand-logo {
+  display: block; width: auto;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 10px rgba(255, 255, 255, .28));
+}
+.title h1.has-logo { padding: 0; height: 100%; display: flex; align-items: center; }
+.title h1.has-logo .brand-logo { height: 176px; }
+/* With a logo the title row is taller and the perma-ban panel slimmer (one row of chips). */
+.with-logo .stage:not(.screens-stage):not(.bracket-stage) { grid-template-rows: 150px 88px 116px 1fr 1fr; }
+.with-logo .perma { gap: 8px; }
+.with-logo .perma-list { max-height: 40px; }
 .title .line { flex: 1; max-width: 440px; height: 2px; }
 .title .line:first-child { background: linear-gradient(90deg, transparent, var(--gold)); }
 .title .line:last-child { background: linear-gradient(90deg, var(--gold), transparent); }

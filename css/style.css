@@ -16,6 +16,8 @@ button, input, select { font: inherit; color: inherit; }
 /* ---------- top ---------- */
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 800; font-size: 18px; letter-spacing: .3em; text-transform: uppercase; color: var(--text); }
+.brand { display: flex; align-items: center; }
+#brand.has-logo .brand-logo { height: 42px; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff); }
 .brand em { font-style: normal; font-weight: 600; font-size: 13px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; margin-left: 10px; }
 .topbar-right { display: flex; gap: 12px; align-items: center; }
 .badge { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; padding: 3px 10px; border: 1px solid var(--line-2); border-radius: 999px; color: var(--muted); }
@@ -197,6 +199,10 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .card-head h2 { margin: 0; }
 .card-head .hint { font-size: 12px; }
+
+/* break timer */
+.admin .break-time { flex: 0 1 170px; }
+#break-status.on { color: var(--gold); font-weight: 700; }
 
 /* small portrait in the resonator list (only when a picture exists in img/resonator-img) */
 .res .av { flex: none; width: 28px; height: 28px; border-radius: 5px; object-fit: cover; background: var(--el); }

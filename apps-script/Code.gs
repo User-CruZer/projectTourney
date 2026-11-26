@@ -163,6 +163,15 @@ function doPost(e) {
         resetsTimer = false;
         break;
       }
+      case 'setBreak': {
+        // Rest-time countdown shown on the bracket overlay. seconds 0 = stop.
+        requireAdmin_(auth);
+        const secs = Math.max(0, Math.min(3 * 3600, Math.round(Number(body.seconds) || 0)));
+        meta.breakUntil = secs ? Date.now() + secs * 1000 : 0;
+        meta.breakLabel = safe_(String(body.label == null ? '' : body.label).trim().slice(0, 40));
+        resetsTimer = false;
+        break;
+      }
       case 'setPermaBans': {
         requireAdmin_(auth);
         const list = [...new Set((body.list || []).map((x) => String(x).slice(0, 40)))].slice(0, 40);
@@ -243,13 +252,15 @@ function readState_() {
     openAccess: !REQUIRE_KEYS,
     bracket: parseJson_(meta.bracket, BracketCore.emptyBracket()),
     bracketLog: lastBracketLog_(),
+    breakUntil: Number(meta.breakUntil) || 0,
+    breakLabel: String(meta.breakLabel || '').replace(/^'/, ''),
     turnStartedAt: Number(meta.turnStartedAt) || Date.now(),
     now: Date.now(),
   };
   // Changes whenever anything visible changes, including manual edits in the sheet.
   state.version = (Number(meta.version) || 0) + ':' + hash_(JSON.stringify([
     actions.map((a) => a.team + a.type + a.char), state.teams, first, state.flipAt,
-    state.permaBans, state.scores, state.turnStartedAt, state.bracket, state.bracketLog]));
+    state.permaBans, state.scores, state.turnStartedAt, state.bracket, state.bracketLog, state.breakUntil, state.breakLabel]));
   return state;
 }
 

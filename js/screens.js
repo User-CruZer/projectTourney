@@ -8,7 +8,7 @@
   if (params.get('bg') === '1') document.body.classList.add('bg');
   if (params.get('guides') === '1') document.body.classList.add('guides');
   document.title = 'Screens — ' + (cfg.TITLE || 'Pick & Ban');
-  $('title').textContent = cfg.TITLE || 'Pick & Ban';
+  $('title').textContent = cfg.TITLE || 'Pick & Ban';   // text title here (the logo is too small in this spot)
   $('stage-tag').textContent = only ? `Stage ${only}` : 'VS';
   HW.fitCanvas($('stage'));
   // Single-stage scenes leave a see-through window between the team panels for a chat source.

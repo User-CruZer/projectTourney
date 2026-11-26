@@ -35,6 +35,8 @@
       uniquePicks: UNIQUE_PICKS,
       bracket: global.BracketCore ? global.BracketCore.emptyBracket() : undefined,
       bracketLog: '',
+      breakUntil: 0,          // break/rest countdown end time (ms), 0 = no break
+      breakLabel: '',
       turnStartedAt: Date.now(),
       version: 1,
       now: Date.now(),
@@ -121,6 +123,14 @@
         s.scores = { A: [cleanScore(op.A1), cleanScore(op.A2)], B: [cleanScore(op.B1), cleanScore(op.B2)] };
         resetsTimer = false;
         break;
+      case 'setBreak': {
+        // Rest-time countdown shown on the bracket overlay. seconds 0 = stop.
+        const secs = Math.max(0, Math.min(3 * 3600, Math.round(Number(op.seconds) || 0)));
+        s.breakUntil = secs ? Date.now() + secs * 1000 : 0;
+        s.breakLabel = String(op.label == null ? '' : op.label).trim().slice(0, 40);
+        resetsTimer = false;
+        break;
+      }
       case 'setPermaBans':
         s.permaBans = [...new Set((op.list || []).map((x) => String(x).slice(0, 40)))].slice(0, 40);
         resetsTimer = false;

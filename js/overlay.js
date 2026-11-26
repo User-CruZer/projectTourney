@@ -4,7 +4,7 @@
   const $ = (id) => document.getElementById(id);
 
   if (new URLSearchParams(location.search).get('bg') === '1') document.body.classList.add('bg');
-  $('title').textContent = cfg.TITLE || 'Pick & Ban';
+  HW.brand($('title'));
   document.title = 'Overlay — ' + (cfg.TITLE || 'Pick & Ban');
 
   HW.fitCanvas($('stage'));

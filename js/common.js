@@ -54,6 +54,26 @@
     return sum.toLocaleString('en-US', { maximumFractionDigits: 2 });
   }
 
+  /** Puts the tournament logo (cfg.LOGO) in el, or the TITLE text when there is no logo. */
+  function brand(el) {
+    if (!el) return;
+    const title = cfg.TITLE || 'Pick & Ban';
+    if (cfg.LOGO) {
+      el.innerHTML = `<img class="brand-logo" src="${esc(cfg.LOGO)}" alt="${esc(title)}">`;
+      el.classList.add('has-logo');
+      document.documentElement.classList.add('with-logo');   // page-level hook for layout tweaks (no CSS :has, which older OBS lacks)
+    } else {
+      el.textContent = title;
+    }
+  }
+
+  /** Milliseconds → "m:ss" (or "h:mm:ss"), rounded up so it never shows 0:00 while time is left. */
+  function clock(ms) {
+    const t = Math.max(0, Math.ceil(ms / 1000));
+    const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = String(t % 60).padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+  }
+
   /** Remaining turn time as "m:ss", or '' when the timer is off / not running. */
   function timerText(state, clockOffset) {
     if (!state || !cfg.TURN_SECONDS || !state.firstTeam || !DraftCore.currentStep(state)) return { text: '', low: false };
@@ -204,5 +224,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, fitText, fitCanvas, backdrop, coinToss, slug, portrait, imagesReady, IMG_DIR };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR };
 })(window);

@@ -21,7 +21,7 @@
   let busy = false;
   let permaDraft = null;          // Set while editing perma bans, else null
 
-  $('brand').textContent = cfg.TITLE || 'Pick & Ban';
+  HW.brand($('brand'));
   document.title = 'Control — ' + (cfg.TITLE || 'Pick & Ban');
   // Overlay preview: switch between the draft overlay and the screen-share overlay.
   const previewSrc = {
@@ -178,7 +178,45 @@
     const t = timerText(state, clockOffset);
     $('timer').textContent = t.text;
     $('timer').classList.toggle('low', t.low);
+    if (role === 'admin') renderBreak();
   }
+
+  // ---------- break timer (countdown on the bracket overlay)
+  const breakLeft = () => (state && state.breakUntil ? Math.max(0, state.breakUntil - (Date.now() + clockOffset)) : 0);
+  function renderBreak() {
+    const on = !!(state && state.breakUntil), left = breakLeft();
+    const st = $('break-status');
+    st.classList.toggle('on', on);
+    st.textContent = !on ? 'Shows a countdown on the bracket overlay.'
+      : left > 0 ? `Running${state.breakLabel ? ' · ' + state.breakLabel : ''} · ${HW.clock(left)} left`
+      : 'Time is up: the overlay shows "Starting soon" for a minute, then hides the timer. Press Stop to hide it now.';
+    $('break-add').disabled = !on || busy;
+    $('break-stop').disabled = !on || busy;
+    document.querySelectorAll('[data-break], #break-start').forEach((b) => (b.disabled = busy));
+    fillIfIdle($('break-label'), state ? state.breakLabel || '' : '');
+  }
+  /** "7" → 420, "2.5" → 150, "4:30" → 270 (minutes, or m:ss). NaN if it can't be read. */
+  function parseDuration(v) {
+    v = String(v).trim();
+    const m = /^(\d{1,3}):([0-5]?\d)$/.exec(v);
+    if (m) return +m[1] * 60 + +m[2];
+    const n = Number(v.replace(',', '.'));
+    return v && isFinite(n) && n > 0 ? Math.round(n * 60) : NaN;
+  }
+  const startBreak = async (secs) => {
+    if (await send({ op: 'setBreak', seconds: secs, label: $('break-label').value.trim() }, `Break timer started: ${HW.clock(secs * 1000)}`)) clean('break-label');
+  };
+  document.querySelectorAll('[data-break]').forEach((b) => b.addEventListener('click', () => startBreak(+b.dataset.break)));
+  $('break-start').addEventListener('click', () => {
+    const secs = parseDuration($('break-time').value);
+    if (!(secs > 0) || secs > 3 * 3600) return toast('Enter the time in minutes, e.g. 7, 2.5 or 4:30 (max 3 hours).');
+    startBreak(secs);
+  });
+  $('break-time').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('break-start').click(); });
+  $('break-add').addEventListener('click', () => {
+    send({ op: 'setBreak', seconds: Math.ceil(breakLeft() / 1000) + 60, label: $('break-label').value.trim() }, 'Added 1 minute');
+  });
+  $('break-stop').addEventListener('click', () => send({ op: 'setBreak', seconds: 0, label: '' }, 'Break timer stopped'));
 
   // ---------- actions
   async function send(op, okMsg) {

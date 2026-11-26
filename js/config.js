@@ -3,6 +3,8 @@
  */
 window.TOURNEY_CONFIG = {
   TITLE: 'HoloWastes',
+  // Logo shown instead of the title text on every page. Remove this line to show TITLE as text.
+  LOGO: 'img/logo.png',
 
   // Colours of the overlays and control page (hex). Leave a value out to use the default.
   THEME: {
