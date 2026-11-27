@@ -100,12 +100,14 @@
   // Coin toss animation (shared with the screens overlay)
   const coin = HW.coinToss();
   const draftDone = HW.draftComplete();   // DRAFT COMPLETE moment after the last lock-in
+  const versus = HW.matchIntro();         // VS intro when a new match-up appears
 
   function onState(next) {
     state = next;
     if (next.now) clockOffset = next.now - Date.now();
     coin(next, clockOffset);
     draftDone(next);
+    versus(next);
     // Animate only an action that was just locked in (not old picks on page load).
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;

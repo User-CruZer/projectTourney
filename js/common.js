@@ -286,6 +286,71 @@
     };
   }
 
+  /**
+   * "Versus" intro on the draft overlays when a new match-up appears: a match loaded from the bracket,
+   * or player names saved. Both sides slam in on a diagonal split, VS crashes in the middle. Not on page load.
+   * Returns update(state); call it with every new state.
+   */
+  // Player pictures for the VS intro: img/player-img/<slug>.webp / .png / .jpg, e.g. "RYUU ZUKI" → ryuu-zuki.png.
+  // Tried in that order; a player with no picture shows just the name.
+  const PLAYER_DIR = cfg.PLAYER_IMG_DIR || 'img/player-img';
+  const playerPic = (name) => name
+    ? `<img class="vs-pic" src="${PLAYER_DIR}/${slug(name)}.webp" data-ext="webp" alt="" onerror="HW.nextPlayerPic(this)">`
+    : '';
+  function nextPlayerPic(img) {
+    const next = { webp: 'png', png: 'jpg' }[img.dataset.ext];
+    if (!next) { img.closest('.vs-card') && img.closest('.vs-card').classList.add('no-pic'); img.remove(); return; }
+    img.dataset.ext = next;
+    img.src = img.src.replace(/\.[a-z]+$/, '.' + next);
+  }
+
+  function matchIntro() {
+    const $ = (id) => document.getElementById(id);
+    let prev = null;
+    let timers = [];
+    function roundLabel(s) {
+      const b = s.bracket, B = global.BracketCore;
+      const p = b && b.current && B ? B.parse(b.current) : null;
+      if (!p) return '';
+      const pp = B.participants(b, p.r, p.i);
+      if (pp[0] !== s.teams.A || pp[1] !== s.teams.B) return '';      // names typed by hand, not the bracket match
+      return `${(cfg.ROUND_NAMES || [])[p.r] || 'Round ' + (p.r + 1)} · M${p.i + 1}`;
+    }
+    function play(s) {
+      let el = $('vs-layer');
+      if (!el) { $('stage').insertAdjacentHTML('beforeend', '<div class="vs-layer" id="vs-layer" hidden></div>'); el = $('vs-layer'); }
+      timers.forEach(clearTimeout);
+      timers = [];
+      let sparks = '';
+      for (let k = 0; k < 26; k++) {
+        const a = (k / 26) * 360 + Math.random() * 10, d = 200 + Math.random() * 220;
+        sparks += `<i style="--a:${a.toFixed(0)}deg;--d:${d.toFixed(0)}px"></i>`;
+      }
+      const label = roundLabel(s);
+      el.innerHTML = `
+        <div class="vs-side A"><div class="vs-card">${playerPic(s.teams.A)}<span class="vs-name">${esc(s.teams.A)}</span></div></div>
+        <div class="vs-side B"><div class="vs-card">${playerPic(s.teams.B)}<span class="vs-name">${esc(s.teams.B)}</span></div></div>
+        <div class="vs-slash"></div>
+        <div class="vs-mid">
+          ${label ? `<div class="vs-kicker">${esc(label)}</div>` : ''}
+          <div class="vs-core"><div class="vs-ring"></div><div class="vs-sparks">${sparks}</div><div class="vs-badge">VS</div></div>
+          <div class="vs-sub">Match up</div>
+        </div>`;
+      el.hidden = false;
+      el.classList.remove('show', 'out');
+      void el.offsetWidth;
+      el.classList.add('show');
+      el.querySelectorAll('.vs-name').forEach((n) => fitText(n, 96, 34, 2));
+      timers.push(setTimeout(() => el.classList.add('out'), 3300));
+      timers.push(setTimeout(() => { el.hidden = true; el.classList.remove('show', 'out'); }, 3900));
+    }
+    return function update(s) {
+      const key = s.teams.A + '|' + s.teams.B;
+      if (prev !== null && key !== prev && s.teams.A && s.teams.B) play(s);
+      prev = key;
+    };
+  }
+
   function coinToss() {
     const $ = (id) => document.getElementById(id);
     if ($('coin-layer') && !$('coin-stage')) $('coin-layer').remove();   // an older page's own coin markup: replace it
@@ -406,5 +471,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro, nextPlayerPic };
 })(window);

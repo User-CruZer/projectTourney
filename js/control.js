@@ -206,7 +206,7 @@
     const on = !!(state && state.breakUntil), left = breakLeft();
     const st = $('break-status');
     st.classList.toggle('on', on);
-    st.textContent = !on ? 'Shows a countdown on the bracket overlay.'
+    st.textContent = !on ? 'Custom: minutes (7) or minutes:seconds (4:30 · 0:45 = 45 sec). Shows a countdown on the bracket overlay.'
       : left > 0 ? `Running${state.breakLabel ? ' · ' + state.breakLabel : ''} · ${HW.clock(left)} left`
       : 'Time is up: the overlay shows "Starting soon" for a minute, then hides the timer. Press Stop to hide it now.';
     $('break-add').disabled = !on || busy;
@@ -228,7 +228,7 @@
   document.querySelectorAll('[data-break]').forEach((b) => b.addEventListener('click', () => startBreak(+b.dataset.break)));
   $('break-start').addEventListener('click', () => {
     const secs = parseDuration($('break-time').value);
-    if (!(secs > 0) || secs > 3 * 3600) return toast('Enter the time in minutes, e.g. 7, 2.5 or 4:30 (max 3 hours).');
+    if (!(secs > 0) || secs > 3 * 3600) return toast('Enter minutes (7, 2.5) or minutes:seconds (4:30, 0:45). Max 3 hours.');
     startBreak(secs);
   });
   $('break-time').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('break-start').click(); });

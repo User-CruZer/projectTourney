@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/theme.css?v=20261128z8" />
-  <link rel="stylesheet" href="css/style.css?v=20261128z8" />
-  <link rel="stylesheet" href="css/gate.css?v=20261128z8" />
+  <link rel="stylesheet" href="css/theme.css?v=20261128ze" />
+  <link rel="stylesheet" href="css/style.css?v=20261128ze" />
+  <link rel="stylesheet" href="css/gate.css?v=20261128ze" />
 </head>
 <body class="control">
   <header class="topbar">
@@ -149,7 +149,7 @@
             <button data-break="180">3 min</button>
             <button data-break="300">5 min</button>
             <button data-break="600">10 min</button>
-            <input id="break-time" class="break-time" placeholder="Custom, e.g. 7 or 4:30" maxlength="8" />
+            <input id="break-time" class="break-time" placeholder="7 or 4:30" title="Minutes (7, 2.5) or minutes:seconds (4:30, 0:45)" maxlength="8" />
             <button id="break-start" class="primary">Start</button>
           </div>
           <div class="row">
@@ -157,7 +157,7 @@
             <button id="break-add" disabled>+1 min</button>
             <button id="break-stop" class="danger" disabled>Stop</button>
           </div>
-          <div class="hint" id="break-status">Shows a countdown on the bracket overlay.</div>
+          <div class="hint" id="break-status">Custom: minutes (7) or minutes:seconds (4:30 · 0:45 = 45 sec). Shows a countdown on the bracket overlay.</div>
         </div>
 
         <div class="group">
@@ -186,12 +186,12 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="js/config.js?v=20261128z8"></script>
-  <script src="js/bracket-core.js?v=20261128z8"></script>
-  <script src="js/draft-core.js?v=20261128z8"></script>
-  <script src="js/backend.js?v=20261128z8"></script>
-  <script src="js/common.js?v=20261128z8"></script>
-  <script src="js/gate.js?v=20261128z8"></script>
-  <script src="js/control.js?v=20261128z8"></script>
+  <script src="js/config.js?v=20261128ze"></script>
+  <script src="js/bracket-core.js?v=20261128ze"></script>
+  <script src="js/draft-core.js?v=20261128ze"></script>
+  <script src="js/backend.js?v=20261128ze"></script>
+  <script src="js/common.js?v=20261128ze"></script>
+  <script src="js/gate.js?v=20261128ze"></script>
+  <script src="js/control.js?v=20261128ze"></script>
 </body>
 </html>

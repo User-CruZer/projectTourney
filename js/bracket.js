@@ -257,6 +257,73 @@
   let last = null;
   let lastBreak = '';
   const scoreAnim = HW.scoreWatcher();
+  // ----- break started (banner + the countdown drops into the panel) / extended with +1 min ("+1:00" floats up)
+  let prevBreakUntil = null;
+  let breakBannerTimer = null;
+  function breakChange(s) {
+    const until = s.breakUntil || 0, before = prevBreakUntil;
+    prevBreakUntil = until;
+    const now = Date.now() + clockOffset;
+    if (before && !until && before > now) {                          // stopped by hand while it was running
+      panelAnim('break-stop');
+      breakBanner('stopped', esc(s.breakLabel || 'Break'), 'Break over', 'Back to the match');
+      return;
+    }
+    if (before === null || !until || until === before) return;     // page load, stopped after it ran out, or unchanged
+    const panel = $('live-panel');
+    if (before > now && until > before) {                           // still running: time was added
+      const plus = document.createElement('span');
+      plus.className = 'lp-plus';
+      plus.textContent = '+' + HW.clock(until - before);
+      panel.appendChild(plus);
+      setTimeout(() => plus.remove(), 1600);
+      panel.classList.remove('break-more'); void panel.offsetWidth; panel.classList.add('break-more');
+      return;
+    }
+    if (until <= now) return;
+    panelAnim('break-in');
+    breakBanner('', esc(s.breakLabel || 'Break'), 'Break', `<b>${HW.clock(until - now)}</b> · Back soon`);
+  }
+
+  // ----- running low: last minute red + pulsing ("1 min left"), last 10 seconds pop + shake every second
+  const LOW_MS = 60000, FINAL_MS = 10000;
+  let wasLow = null;
+  function lowTime(left, secondChanged) {
+    const panel = $('live-panel');
+    const low = left <= LOW_MS, final = left <= FINAL_MS;
+    panel.classList.toggle('low', low);
+    panel.classList.toggle('final', final);
+    if (low && !panel.querySelector('.lp-low-tag')) {
+      panel.insertAdjacentHTML('beforeend', `<span class="lp-low-tag">${final ? 'Final seconds' : '1 min left'}</span>`);
+    }
+    const tag = panel.querySelector('.lp-low-tag');
+    if (tag) { if (!low) tag.remove(); else tag.textContent = final ? 'Final seconds' : '1 min left'; }
+    if (low && wasLow === false) panelAnim('low-in');               // crossed into the last minute while watching
+    if (final && secondChanged) {                                   // every second of the last ten
+      const c = $('lp-clock');
+      c.classList.remove('beat'); void c.offsetWidth; c.classList.add('beat');
+      panelAnim('final-shake');
+    }
+    wasLow = low;
+  }
+
+  /** Big banner over the bracket (same look as the win banner). */
+  function breakBanner(cls, kicker, big, sub) {
+    let el = $('break-banner');
+    if (!el) { el = document.createElement('div'); el.id = 'break-banner'; $('stage').appendChild(el); }
+    el.className = 'win-banner break-banner ' + cls;
+    el.innerHTML = `<div class="wb-kicker">${kicker}</div><div class="wb-name">${big}</div><div class="wb-sub">${sub}</div>`;
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(breakBannerTimer);
+    breakBannerTimer = setTimeout(() => el.classList.remove('show'), 3200);
+  }
+  /** Restart an animation class on the live panel (renderLive resets its classes, so call after it). */
+  function panelAnim(cls) {
+    const panel = $('live-panel');
+    panel.classList.remove(cls); void panel.offsetWidth; panel.classList.add(cls);
+  }
+
   backend.subscribe((s) => {
     last = s;
     if (s.now) clockOffset = s.now - Date.now();
@@ -264,6 +331,7 @@
     const b = s.bracket || B.emptyBracket();
     fresh = newResults(b);
     render(s); renderLive(s);
+    breakChange(s);
     scoreAnim.play(scoreAnim.changes(s.scores));   // a score / point just entered: count up + pop (live panel)
     if (fresh.length) celebrate(b, fresh[fresh.length - 1]);   // usually one; on several, the latest
     fresh = [];   // re-draws later (fonts) don't replay it
@@ -272,8 +340,22 @@
   setInterval(() => {
     if (!last) return;
     const bp = breakPhase(last);
-    if (bp !== lastBreak) { lastBreak = bp; renderLive(last); return; }
-    if (bp === 'run' && $('lp-clock')) $('lp-clock').textContent = HW.clock(last.breakUntil - (Date.now() + clockOffset));
+    if (bp !== lastBreak) {
+      const ranOut = lastBreak === 'run' && bp === 'end';   // seen counting down on this page, now at 0:00
+      lastBreak = bp; renderLive(last);
+      if (ranOut) {
+        panelAnim('break-up');
+        breakBanner('timeup', esc(last.breakLabel || 'Break'), "Time's up", 'Starting soon');
+      }
+      return;
+    }
+    if (bp === 'run' && $('lp-clock')) {
+      const left = last.breakUntil - (Date.now() + clockOffset);
+      const clockEl = $('lp-clock'), text = HW.clock(left);
+      const changed = clockEl.textContent !== text;
+      clockEl.textContent = text;
+      lowTime(left, changed);
+    }
   }, 250);
   if (document.fonts) {
     // Re-fit text once web fonts arrive (also later ones, e.g. the Noir theme font).

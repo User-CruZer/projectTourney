@@ -21,6 +21,7 @@
   let gained = { A: [], B: [] };       // points just given (animated once)
   const coin = HW.coinToss();
   const draftDone = HW.draftComplete();   // DRAFT COMPLETE moment after the last lock-in
+  const versus = HW.matchIntro();         // VS intro when a new match-up appears
   // casino reels when the bosses are rolled
   const spin = HW.bossSpinner({ cards: () => document.querySelectorAll('#bosses .hboss'), nameSel: '.bn', fit: (el) => fitText(el, 26, 14, 2) });
 
@@ -74,6 +75,7 @@
     if (next.now) clockOffset = next.now - Date.now();
     coin(next, clockOffset);
     draftDone(next);
+    versus(next);
     spin.update(next.bosses);
     gained = gainedPoints(lastScores, next.scores);
     lastScores = next.scores;

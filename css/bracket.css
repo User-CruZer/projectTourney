@@ -197,3 +197,54 @@
   85% { opacity: 1; }
   100% { opacity: 0; transform: translate(var(--dx), 1140px) rotate(var(--rot)); }
 }
+
+/* ---------- break started (js/bracket.js breakChange): banner + countdown drops in; +1 min floats up ---------- */
+.break-banner .wb-name { font-size: 110px; letter-spacing: .3em; padding-left: .3em; color: #fff; }
+.break-banner .wb-sub b { color: var(--gold); font-variant-numeric: tabular-nums; }
+.break-banner.show .wb-name { animation: wb-name .9s cubic-bezier(.2, 1.4, .4, 1) .7s both; }
+.live-panel.break-in { animation: lp-break-in 1s cubic-bezier(.2, 1.3, .4, 1) .4s both; }
+.live-panel.break-in .lp-clock { animation: lp-clock-drop .8s cubic-bezier(.2, 1.6, .4, 1) .9s both; }
+@keyframes lp-break-in {
+  0% { opacity: 0; transform: scale(.7); }
+  60% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 0 4px var(--gold), 0 0 60px rgba(232, 197, 71, .6); }
+  100% { transform: none; box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes lp-clock-drop { 0% { opacity: 0; transform: translateY(-50px) scale(1.4); filter: blur(4px); } 100% { opacity: 1; transform: none; filter: none; } }
+.live-panel.break-more .lp-clock { animation: pt-bump-clock .7s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes pt-bump-clock { 35% { transform: scale(1.15); color: var(--gold); } 100% { transform: none; } }
+.lp-plus {
+  position: absolute; left: 50%; top: 40%; pointer-events: none;
+  font-size: 44px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 0 #000, 0 0 16px rgba(0, 0, 0, .8);
+  opacity: 0; animation: lp-plus 1.5s ease-out forwards;
+}
+@keyframes lp-plus { 0% { opacity: 0; transform: translate(-50%, 20px) scale(.6); } 20% { opacity: 1; transform: translate(-50%, -6px) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -60px) scale(1); } }
+
+/* time's up (red flash, panel shakes) / stopped by hand (panel flips back to the match) */
+.break-banner.timeup { border-color: var(--ban); box-shadow: 0 20px 80px rgba(0, 0, 0, .8), 0 0 70px rgba(229, 72, 77, .55); }
+.break-banner.timeup .wb-kicker { color: var(--ban); }
+.break-banner.timeup .wb-name { color: #fff; letter-spacing: .12em; padding-left: .12em; }
+.break-banner.timeup.show { animation: bk-timeup .9s ease-out .55s; }
+@keyframes bk-timeup { 0%, 100% { transform: none; } 15% { transform: translateX(-12px) rotate(-1deg); } 30% { transform: translateX(10px) rotate(1deg); } 45% { transform: translateX(-7px); } 60% { transform: translateX(5px); } 75% { transform: translateX(-2px); } }
+.break-banner.stopped .wb-name { font-size: 96px; letter-spacing: .12em; padding-left: .12em; }
+.break-banner.stopped .wb-sub { color: var(--gold); }
+.live-panel.break-up { animation: ban-shake .6s ease-out, lp-up-glow 1.4s ease-out; }
+@keyframes lp-up-glow { 20% { box-shadow: 0 0 0 4px var(--ban), 0 0 50px rgba(229, 72, 77, .6); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.live-panel.break-stop { animation: lp-flip .8s cubic-bezier(.2, 1.2, .4, 1); }
+@keyframes lp-flip { 0% { transform: perspective(900px) rotateY(90deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+/* running low (js/bracket.js lowTime): last minute red + pulsing, last 10 seconds pop + shake each second */
+.live-panel.break.low { border-color: var(--ban); border-top-color: var(--ban); box-shadow: 0 0 30px rgba(229, 72, 77, .25); }
+.live-panel.break.low .lp-dot { background: var(--ban); animation: lp-blink .6s ease-in-out infinite; }
+.live-panel.break.low .lp-clock { color: var(--ban); animation: lp-low-pulse 1s ease-in-out infinite; text-shadow: 0 0 30px rgba(229, 72, 77, .5); }
+@keyframes lp-low-pulse { 50% { transform: scale(1.05); } }
+.live-panel.break.low.low-in { animation: lp-low-in 1.2s ease-out; }
+@keyframes lp-low-in { 0% { box-shadow: 0 0 0 0 rgba(229, 72, 77, .9); } 30% { box-shadow: 0 0 0 6px var(--ban), 0 0 70px rgba(229, 72, 77, .8); background: #2a1214; } 100% { box-shadow: 0 0 30px rgba(229, 72, 77, .25); } }
+.lp-low-tag {
+  position: absolute; right: 14px; top: 14px; padding: 2px 10px; border-radius: 4px;
+  background: var(--ban); color: #fff; font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+  animation: lp-blink 1s ease-in-out infinite;
+}
+.live-panel.break.final .lp-clock { font-size: 120px; }
+.live-panel.break.final .lp-clock.beat { animation: lp-beat .6s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes lp-beat { 0% { transform: scale(1.45); color: #fff; text-shadow: 0 0 40px rgba(229, 72, 77, 1); } 100% { transform: none; } }
+.live-panel.break.final.final-shake { animation: ban-shake .4s ease-out; }
