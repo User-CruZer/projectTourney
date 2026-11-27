@@ -316,26 +316,13 @@ body.bg { background: var(--bg); }
 
 .vs-side { position: absolute; inset: 0; display: flex; align-items: center; }
 .vs-side.A {
-  clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%); justify-content: flex-start; padding-left: 4%;
+  clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%); justify-content: flex-start; padding-left: 7%;
   background: linear-gradient(100deg, rgba(6, 6, 6, .96) 0%, rgba(20, 20, 20, .96) 40%, color-mix(in srgb, var(--a) 22%, #111) 52%);
 }
 .vs-side.B {
-  clip-path: polygon(56% 0, 100% 0, 100% 100%, 44% 100%); justify-content: flex-end; padding-right: 4%;
+  clip-path: polygon(56% 0, 100% 0, 100% 100%, 44% 100%); justify-content: flex-end; padding-right: 7%;
   background: linear-gradient(280deg, rgba(6, 6, 6, .96) 0%, rgba(20, 20, 20, .96) 40%, color-mix(in srgb, var(--b) 26%, #111) 52%);
 }
-/* a player's card: picture (img/player-img, optional) with the name under it */
-.vs-card { width: 620px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-.vs-side.A .vs-card { align-items: flex-start; }
-.vs-side.B .vs-card { align-items: flex-end; }
-.vs-pic {
-  width: 440px; height: 560px; object-fit: cover; object-position: top; border-radius: 14px;
-  -webkit-mask: linear-gradient(180deg, #000 70%, transparent); mask: linear-gradient(180deg, #000 70%, transparent);
-}
-.vs-side.A .vs-pic { filter: drop-shadow(0 0 30px color-mix(in srgb, var(--a) 40%, transparent)); }
-.vs-side.B .vs-pic { filter: drop-shadow(0 0 30px color-mix(in srgb, var(--b) 40%, transparent)); }
-.show .vs-pic { animation: vs-pic .7s cubic-bezier(.2, 1.2, .4, 1) .15s both; }
-@keyframes vs-pic { 0% { opacity: 0; transform: scale(1.25); } 100% { opacity: 1; transform: none; } }
-.vs-card:not(.no-pic) .vs-name { font-size: 72px; margin-top: -90px; position: relative; }   /* name overlaps the faded bottom of the picture */
 .vs-name {
   width: 620px; font-size: 96px; font-weight: 800; line-height: .95; text-transform: uppercase; letter-spacing: .02em;
   overflow: hidden; overflow-wrap: anywhere;

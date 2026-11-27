@@ -291,19 +291,6 @@
    * or player names saved. Both sides slam in on a diagonal split, VS crashes in the middle. Not on page load.
    * Returns update(state); call it with every new state.
    */
-  // Player pictures for the VS intro: img/player-img/<slug>.webp / .png / .jpg, e.g. "RYUU ZUKI" → ryuu-zuki.png.
-  // Tried in that order; a player with no picture shows just the name.
-  const PLAYER_DIR = cfg.PLAYER_IMG_DIR || 'img/player-img';
-  const playerPic = (name) => name
-    ? `<img class="vs-pic" src="${PLAYER_DIR}/${slug(name)}.webp" data-ext="webp" alt="" onerror="HW.nextPlayerPic(this)">`
-    : '';
-  function nextPlayerPic(img) {
-    const next = { webp: 'png', png: 'jpg' }[img.dataset.ext];
-    if (!next) { img.closest('.vs-card') && img.closest('.vs-card').classList.add('no-pic'); img.remove(); return; }
-    img.dataset.ext = next;
-    img.src = img.src.replace(/\.[a-z]+$/, '.' + next);
-  }
-
   function matchIntro() {
     const $ = (id) => document.getElementById(id);
     let prev = null;
@@ -328,8 +315,8 @@
       }
       const label = roundLabel(s);
       el.innerHTML = `
-        <div class="vs-side A"><div class="vs-card">${playerPic(s.teams.A)}<span class="vs-name">${esc(s.teams.A)}</span></div></div>
-        <div class="vs-side B"><div class="vs-card">${playerPic(s.teams.B)}<span class="vs-name">${esc(s.teams.B)}</span></div></div>
+        <div class="vs-side A"><span class="vs-name">${esc(s.teams.A)}</span></div>
+        <div class="vs-side B"><span class="vs-name">${esc(s.teams.B)}</span></div>
         <div class="vs-slash"></div>
         <div class="vs-mid">
           ${label ? `<div class="vs-kicker">${esc(label)}</div>` : ''}
@@ -471,5 +458,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro, nextPlayerPic };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro };
 })(window);
