@@ -350,6 +350,7 @@
         // The last pick's lock-in has played by now. Drop its .fresh class, or the browser restarts that
         // lock-in when .draft-done is taken off again (it looked like the pick locked in twice).
         stage.querySelectorAll('.fresh').forEach((n) => n.classList.remove('fresh'));
+        takeStage('done-layer');
         stage.classList.remove('draft-done'); void stage.offsetWidth; stage.classList.add('draft-done');
         el.hidden = false; el.classList.remove('out'); void el.offsetWidth; el.classList.add('show');
         el.querySelectorAll('.done-vs span').forEach((n) => fitText(n, 44, 20));
@@ -383,7 +384,7 @@
       return `${(cfg.ROUND_NAMES || [])[p.r] || 'Round ' + (p.r + 1)} · M${p.i + 1}`;
     }
     function play(s) {
-      dismissLayer('mw-layer');   // the previous match's winner banner gives way to the new match-up
+      takeStage('vs-layer');      // e.g. the previous match's winner banner gives way to the new match-up
       let el = $('vs-layer');
       if (!el) { $('stage').insertAdjacentHTML('beforeend', '<div class="vs-layer" id="vs-layer" hidden></div>'); el = $('vs-layer'); }
       timers.forEach(clearTimeout);
@@ -429,6 +430,9 @@
     const el = document.getElementById(id);
     if (el && !el.hidden) { el.hidden = true; el.classList.remove('show', 'out'); }
   }
+  /** A full-screen moment is starting: any other one still on screen gets out of the way. */
+  const MOMENT_LAYERS = ['coin-layer', 'vs-layer', 'done-layer', 'mw-layer'];
+  function takeStage(id) { MOMENT_LAYERS.forEach((x) => { if (x !== id) dismissLayer(x); }); }
 
   function matchWinner() {
     const $ = (id) => document.getElementById(id);
@@ -445,7 +449,7 @@
       const color = glowC || (res.w === 'A' ? 'var(--a)' : 'var(--b)');
       const fmt = (v) => (v === null || v === undefined || v === '' ? '' : scoreTotal([v]) || String(v));
       const sa = fmt(res.sa), sb = fmt(res.sb);
-      dismissLayer('vs-layer');   // a VS intro still showing gives way to the result
+      takeStage('mw-layer');      // e.g. a VS intro still showing gives way to the result
       let el = $('mw-layer');
       if (!el) { $('stage').insertAdjacentHTML('beforeend', '<div class="mw-layer" id="mw-layer" hidden></div>'); el = $('mw-layer'); }
       let sparks = '';
@@ -511,6 +515,7 @@
 
     function play(s) {
       timers.forEach(clearTimeout);
+      takeStage('coin-layer');   // e.g. a VS intro still showing gives way to the toss
       // a highlighted player's side of the coin is in their colour, with their GIF above the name
       ['A', 'B'].forEach((t) => {
         const face = $('coin-' + t), c = glowOf(s.teams[t]);

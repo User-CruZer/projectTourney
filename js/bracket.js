@@ -140,6 +140,7 @@
     let el = $('win-banner');
     if (!el) { el = document.createElement('div'); el.id = 'win-banner'; $('stage').appendChild(el); }
     const glowC = HW.glowOf(name);   // highlighted player: the banner is in their colour, with their GIF and hearts
+    const brk = $('break-banner'); if (brk) brk.classList.remove('show');   // one banner at a time: the result wins
     el.className = 'win-banner' + (final ? ' champion' : '') + (glowC ? ' glow-win' : '');
     if (glowC) el.style.setProperty('--glow-c', glowC); else el.style.removeProperty('--glow-c');
     el.innerHTML = `
@@ -355,6 +356,7 @@
 
   /** Big banner over the bracket (same look as the win banner). */
   function breakBanner(cls, kicker, big, sub) {
+    const win = $('win-banner'); if (win) { win.classList.remove('show'); clearTimeout(bannerTimer); }   // one banner at a time
     let el = $('break-banner');
     if (!el) { el = document.createElement('div'); el.id = 'break-banner'; $('stage').appendChild(el); }
     el.className = 'win-banner break-banner ' + cls;
