@@ -37,6 +37,7 @@
 
     ['A', 'B'].forEach((t) => {
       $('name-' + t).textContent = s.teams[t];
+      HW.applyGlow($('name-' + t), s.teams[t]);
       $('pts-' + t).innerHTML = pointBoxes(s, t, gained[t]);
     });
 
@@ -119,6 +120,7 @@
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;
     render();
+    HW.glowLock(next, freshIdx);   // a highlighted player's lock-in: their colour + hearts
     freshIdx = -1;
     gained = { A: [], B: [] };   // later re-draws (fonts, pictures) don't replay it
   });

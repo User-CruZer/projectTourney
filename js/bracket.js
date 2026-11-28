@@ -59,17 +59,51 @@
     return { name, cls, score, live: !res && b.current === matchId && name && side === 'A' };
   }
 
+  /** A few soft sparkles (same look as the name plate ones in css/overlay.css). */
+  function sparkles(n) {
+    let html = '';
+    for (let k = 0; k < n; k++) {
+      html += `<i style="left:${(6 + Math.random() * 88).toFixed(0)}%;top:${(10 + Math.random() * 65).toFixed(0)}%;` +
+        `font-size:${(7 + Math.random() * 6).toFixed(0)}px;animation-delay:${(Math.random() * 4).toFixed(2)}s;` +
+        `animation-duration:${(3.2 + Math.random() * 2.2).toFixed(2)}s">✦</i>`;
+    }
+    return `<span class="plate-sparkles">${html}</span>`;
+  }
+
+  /** Players who lost a match: they're out, so a highlighted (glowing) player goes dark everywhere. */
+  function knockedOutSet(b) {
+    const out = new Set();
+    Object.keys(b.results || {}).forEach((id) => {
+      const p = B.parse(id), res = b.results[id];
+      const loser = p && res ? B.participants(b, p.r, p.i)[res.w === 'A' ? 1 : 0] : '';
+      if (loser) out.add(String(loser).trim().toUpperCase());
+    });
+    return out;
+  }
+  /** Name for the side panels: glowing if highlighted and still in the tournament. */
+  const panelName = (b, name) => knockedOutSet(b).has(String(name || '').trim().toUpperCase()) ? esc(name) : HW.glowName(name);
+
   function render(state) {
     const b = state.bracket || B.emptyBracket();
     let html = ROUND_NAMES.map((n, c) => `<div class="col-head" style="left:${colX(c)}px">${esc(n)}</div>`).join('');
     let paths = '';
 
+    const knockedOut = knockedOutSet(b);
     for (let c = 0; c <= 4; c++) {
       centers[c].forEach((cy, j) => {
         const info = boxInfo(b, c, j);
         const h = c === 4 ? CHAMP_H : H;
-        html += `<div class="box ${info.cls}" style="left:${colX(c)}px;top:${cy - h / 2}px">` +
+        // highlighted player (cfg.PLAYER_GLOW): their boxes glow in their colour until they're knocked out (then all go dark)
+        const out = knockedOut.has(String(info.name || '').trim().toUpperCase());
+        const glow = info.name && !out ? HW.glowOf(info.name) : '';
+        // a highlighted player was just knocked out here: a soft goodbye ("GG ♡", their GIF fades to grey) before going dark
+        const softOut = info.name && (' ' + info.cls + ' ').includes(' just-lost ') ? HW.glowOf(info.name) : '';
+        const tint = glow || softOut;
+        html += `<div class="box ${info.cls}${glow ? ' glow' : ''}${softOut ? ' soft-out' : ''}" style="left:${colX(c)}px;top:${cy - h / 2}px${tint ? ';--glow-c:' + esc(tint) : ''}">` +
           (c === 4 && info.name ? '<span class="trophy">🏆</span>' : '') +
+          (info.name && (!out || softOut) ? HW.gifImg(info.name, 'box-gif') : '') +   // their picture/GIF (cfg.PLAYER_GIF) while still in
+          (softOut ? '<span class="gg-tag">GG ♡</span>' : '') +
+          (glow ? sparkles(c === 4 ? 8 : 5) : '') +   // soft sparkles, like on their name plate
           `<span class="nm">${esc(info.name || (c === 4 ? '?' : '—'))}</span>` +
           (info.score ? `<span class="sc">${esc(info.score)}</span>` : '') +
           (info.live ? '<span class="live-tag">LIVE</span>' : '') + '</div>';
@@ -105,17 +139,29 @@
     const final = p.r === B.ROUNDS - 1;
     let el = $('win-banner');
     if (!el) { el = document.createElement('div'); el.id = 'win-banner'; $('stage').appendChild(el); }
-    el.className = 'win-banner' + (final ? ' champion' : '');
+    const glowC = HW.glowOf(name);   // highlighted player: the banner is in their colour, with their GIF and hearts
+    el.className = 'win-banner' + (final ? ' champion' : '') + (glowC ? ' glow-win' : '');
+    if (glowC) el.style.setProperty('--glow-c', glowC); else el.style.removeProperty('--glow-c');
     el.innerHTML = `
       <div class="wb-kicker">${esc(ROUND_NAMES[p.r])} · M${p.i + 1}</div>
       ${final ? '<div class="wb-trophy">🏆</div>' : ''}
-      <div class="wb-name">${esc(name)}</div>
+      ${glowC ? HW.gifImg(name, 'wb-gif') : ''}
+      <div class="wb-name${glowC ? ' roomy' : ''}">${HW.glowName(name)}</div>
       <div class="wb-sub">${final ? 'Champion' : 'Wins · advances to ' + esc(ROUND_NAMES[p.r + 1])}</div>`;
     fitText(el.querySelector('.wb-name'), final ? 110 : 84, 36);
+    if (glowC) {
+      // hearts falling in their colour (more for the title)
+      let hearts = '';
+      for (let k = 0; k < (final ? 60 : 36); k++) {
+        hearts += `<b style="left:${Math.random() * 100}%;font-size:${Math.round(18 + Math.random() * 30)}px;animation-delay:${(Math.random() * 1.4).toFixed(2)}s;` +
+          `animation-duration:${(2.8 + Math.random() * 2).toFixed(2)}s;--rot:${Math.round(Math.random() * 120 - 60)}deg;--dx:${Math.round(Math.random() * 160 - 80)}px">♥</b>`;
+      }
+      el.insertAdjacentHTML('beforeend', `<div class="confetti hearts">${hearts}</div>`);
+    }
     if (final) {
       let conf = '';
       for (let k = 0; k < 90; k++) {
-        const hue = ['var(--gold)', '#fff6d6', '#f2f2f2', '#c9a227', 'var(--b)'][k % 5];
+        const hue = (glowC ? ['var(--glow-c)', '#fff0f7', '#ffd1e6', 'var(--gold)', '#f2f2f2'] : ['var(--gold)', '#fff6d6', '#f2f2f2', '#c9a227', 'var(--b)'])[k % 5];
         conf += `<i style="left:${Math.random() * 100}%;background:${hue};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;` +
           `animation-duration:${(2.6 + Math.random() * 2).toFixed(2)}s;--rot:${Math.round(Math.random() * 720 - 360)}deg;--dx:${Math.round(Math.random() * 160 - 80)}px"></i>`;
       }
@@ -197,7 +243,7 @@
         <div class="lp-head"><span class="lp-dot"></span><span class="lp-round">${esc(s.breakLabel || 'Break')}</span></div>
         <div class="lp-clock" id="lp-clock">${bp === 'run' ? HW.clock(s.breakUntil - (Date.now() + clockOffset)) : 'Starting soon'}</div>
         ${nm ? `<div class="lp-sub">Next · ${esc(ROUND_NAMES[nm.r])} M${nm.i + 1}</div>
-        <div class="lp-next"><span class="nm">${esc(nm.p[0])}</span><em>vs</em><span class="nm">${esc(nm.p[1])}</span></div>` : ''}`;
+        <div class="lp-next"><span class="nm">${panelName(b, nm.p[0])}</span><em>vs</em><span class="nm">${panelName(b, nm.p[1])}</span></div>` : ''}`;
       panel.querySelectorAll('.lp-next .nm').forEach((el) => fitText(el, 22, 12));
       if (bp === 'end') fitText($('lp-clock'), 64, 28);
     } else if (!cur) {
@@ -217,8 +263,8 @@
       panel.innerHTML = `
         <div class="lp-head"><span class="lp-dot"></span><span class="lp-round">${ph.result ? 'Result' : 'Live now'} · ${esc(ROUND_NAMES[cur.r])} M${cur.i + 1}</span></div>
         <div class="lp-vs">
-          <div class="lp-p A${won('A')}"><span class="nm">${esc(pp[0])}</span><b data-sk="TA">${esc(tot('A'))}</b></div>
-          <div class="lp-p B${won('B')}"><span class="nm">${esc(pp[1])}</span><b data-sk="TB">${esc(tot('B'))}</b></div>
+          <div class="lp-p A${won('A')}"><span class="nm">${panelName(b, pp[0])}</span><b data-sk="TA">${esc(tot('A'))}</b></div>
+          <div class="lp-p B${won('B')}"><span class="nm">${panelName(b, pp[1])}</span><b data-sk="TB">${esc(tot('B'))}</b></div>
         </div>
         <div class="lp-text${ph.side ? ' ' + ph.side : ''}">${esc(ph.text)}</div>
         <div class="lp-sub">${esc(ph.sub)}</div>
@@ -242,7 +288,7 @@
     }
     next.innerHTML = ups.length
       ? '<div class="np-head">Up next</div>' + ups.map((m) =>
-        `<div class="np-row"><span class="np-round">${esc(ROUND_NAMES[m.r])} M${m.i + 1}</span><span class="np-vs">${esc(m.p[0])} <em>vs</em> ${esc(m.p[1])}</span></div>`).join('')
+        `<div class="np-row"><span class="np-round">${esc(ROUND_NAMES[m.r])} M${m.i + 1}</span><span class="np-vs">${panelName(b, m.p[0])} <em>vs</em> ${panelName(b, m.p[1])}</span></div>`).join('')
       : '';
     next.hidden = !ups.length;
     next.querySelectorAll('.np-vs').forEach((el) => fitText(el, 18, 12));

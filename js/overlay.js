@@ -36,6 +36,8 @@
 
     $('name-A').textContent = s.teams.A;
     $('name-B').textContent = s.teams.B;
+    HW.applyGlow($('name-A'), s.teams.A);
+    HW.applyGlow($('name-B'), s.teams.B);
     $('total-A').textContent = scoreTotal(s.scores.A) || '–';
     $('total-B').textContent = scoreTotal(s.scores.B) || '–';
 
@@ -112,6 +114,7 @@
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;
     render();
+    HW.glowLock(next, freshIdx);   // a highlighted player's lock-in: their colour + hearts
     freshIdx = -1;
     scoreAnim.play(scoreAnim.changes(next.scores));   // a score just entered: count up + pop
   }

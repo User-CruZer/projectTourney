@@ -56,6 +56,7 @@
 
     ['A', 'B'].forEach((t) => {
       $('name-' + t).textContent = s.teams[t];
+      HW.applyGlow($('name-' + t), s.teams[t]);
       $('total-' + t).textContent = scoreTotal(s.scores[t]) || '–';
       $('guide-' + t).innerHTML = `<div>${esc(s.teams[t])} screen<small>924 × 520 · x ${t === 'A' ? 24 : 972} · y 128</small></div>`;
 
@@ -100,6 +101,7 @@
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;
     render();
+    HW.glowLock(next, freshIdx);   // a highlighted player's lock-in: their colour + hearts
     freshIdx = -1;
     scoreAnim.play(scoreAnim.changes(next.scores));   // a score just entered: count up + pop
   });

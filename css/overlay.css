@@ -373,3 +373,112 @@ body.bg { background: var(--bg); }
 }
 .vs-sparks i:nth-child(2n) { background: #fff; }
 .show .vs-sparks i { animation: coin-spark 1s cubic-bezier(.1, .7, .3, 1) .55s forwards; }
+
+/* ---------- highlighted players (cfg.PLAYER_GLOW in js/config.js): a soft glow in their colour everywhere ---------- */
+.glow-name {
+  color: var(--glow-c) !important;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--glow-c) 45%, transparent), 0 0 16px color-mix(in srgb, var(--glow-c) 22%, transparent) !important;
+  animation: glow-pulse 3.2s ease-in-out infinite;
+}
+@keyframes glow-pulse { 50% { text-shadow: 0 0 9px color-mix(in srgb, var(--glow-c) 55%, transparent), 0 0 22px color-mix(in srgb, var(--glow-c) 30%, transparent); } }
+/* name plates of a highlighted player: a soft border glow + a light tint behind the name */
+.glow-plate {
+  border: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--glow-c) 75%, transparent), 0 0 16px color-mix(in srgb, var(--glow-c) 30%, transparent);
+  animation: plate-glow 3.2s ease-in-out infinite;
+}
+@keyframes plate-glow { 50% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--glow-c) 85%, transparent), 0 0 26px color-mix(in srgb, var(--glow-c) 40%, transparent); } }
+.player.B.glow-plate, .plate.B.glow-plate { border: 2px solid color-mix(in srgb, var(--glow-c) 80%, transparent); background: linear-gradient(90deg, #141414 45%, color-mix(in srgb, var(--glow-c) 12%, #141414)); }
+/* white plate (player A): light blush tint, the name in a deeper rose so it reads well on white */
+.player.A.glow-plate, .plate.A.glow-plate { background: linear-gradient(90deg, color-mix(in srgb, var(--glow-c) 18%, #fff), #fff 75%); }
+.player.A .glow-name, .plate.A .glow-name {
+  color: color-mix(in srgb, var(--glow-c) 72%, #4a1530) !important;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--glow-c) 35%, transparent) !important;
+}
+/* bracket: the box glows softly while they are still in */
+.box.glow {
+  border-color: color-mix(in srgb, var(--glow-c) 80%, transparent) !important; border-left-color: var(--glow-c) !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--glow-c) 14%, #141414), #141414 70%);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--glow-c) 30%, transparent);
+  animation: box-glow 3.2s ease-in-out infinite;
+}
+.box.glow .nm { color: color-mix(in srgb, var(--glow-c) 55%, #fff); text-shadow: 0 0 6px color-mix(in srgb, var(--glow-c) 40%, transparent); }
+@keyframes box-glow { 50% { box-shadow: 0 0 18px color-mix(in srgb, var(--glow-c) 40%, transparent); } }
+/* highlighted players' names in a cute script font (Pacifico, loaded on the overlay pages): "Miayam" */
+.glow-name, .box.glow .nm {
+  font-family: 'Pacifico', cursive !important; font-weight: 400 !important;
+  text-transform: lowercase !important; letter-spacing: .01em !important; line-height: 1.35;
+}
+span.glow-name { display: inline-block; }   /* so ::first-letter works on inline names */
+.glow-name::first-letter, .box.glow .nm::first-letter { text-transform: uppercase; }
+/* the script's swashes (the "y" tail, the "M" curl) reach outside a normal text box: give them room so nothing is clipped */
+.glow-name, .box.glow .nm { padding: .08em .22em .3em .18em; }
+.pname.glow-name { max-height: none !important; overflow: visible !important; }
+.box.glow .nm { overflow: visible; padding-top: 0; padding-bottom: .12em; }
+.roomy { overflow: visible !important; }   /* set by js on boxes that hold a glowing (script) name; no :has(), older OBS lacks it */
+
+/* player GIFs (cfg.PLAYER_GIF): bracket box, name plate, VS intro */
+.box-gif { flex: none; width: 34px; height: 34px; margin-left: -8px; border-radius: 6px; object-fit: cover; box-shadow: 0 0 0 1px color-mix(in srgb, var(--glow-c, #fff) 70%, transparent); }
+.box.champ .box-gif { width: 56px; height: 56px; }
+.plate-gif { flex: none; width: 72px; height: 72px; border-radius: 10px; object-fit: cover; box-shadow: 0 0 0 2px color-mix(in srgb, var(--glow-c, #fff) 75%, transparent), 0 0 12px color-mix(in srgb, var(--glow-c, #fff) 35%, transparent); }
+.player .plate-gif { width: 84px; height: 84px; }
+.vs-stack { display: flex; flex-direction: column; gap: 14px; }
+.vs-side.A .vs-stack { align-items: flex-start; }
+.vs-side.B .vs-stack { align-items: flex-end; }
+.vs-gif { width: 300px; height: 300px; border-radius: 22px; object-fit: cover; box-shadow: 0 0 0 3px color-mix(in srgb, var(--glow-c, var(--gold)) 80%, transparent), 0 0 34px color-mix(in srgb, var(--glow-c, var(--gold)) 40%, transparent); }
+.show .vs-gif { animation: vs-gif .75s cubic-bezier(.2, 1.4, .4, 1) .3s both; }
+@keyframes vs-gif { 0% { opacity: 0; transform: scale(.4) rotate(-10deg); } 100% { opacity: 1; transform: none; } }
+
+/* ---------- a highlighted player's lock-in (js/common.js glowLock): their colour, "LOCKED IN ♡", a burst of hearts ---------- */
+.slot.fresh.glow-lock, .pick.fresh.glow-lock { animation: lock-slam .7s cubic-bezier(.2, 1.4, .4, 1), lock-ring-glow 1.3s ease-out; }
+@keyframes lock-ring-glow {
+  0% { box-shadow: 0 0 0 0 var(--glow-c); }
+  35% { box-shadow: 0 0 0 6px var(--glow-c), 0 0 40px 6px color-mix(in srgb, var(--glow-c) 70%, transparent); }
+  100% { box-shadow: 0 0 0 22px transparent; }
+}
+.slot.fresh.glow-lock::after, .pick.fresh.glow-lock::after {
+  content: 'LOCKED IN ♡';
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--glow-c) 80%, #fff), color-mix(in srgb, var(--glow-c) 50%, transparent) 75%);
+}
+.ban.fresh.glow-lock { animation: ban-shake .6s ease-out, lock-ring-glow 1.3s ease-out; }
+.ban.fresh.glow-lock::after { background: radial-gradient(circle, color-mix(in srgb, var(--glow-c) 85%, transparent), color-mix(in srgb, var(--glow-c) 15%, transparent) 70%); }
+.ban-chip.fresh.glow-lock .tag { background: var(--glow-c); color: #2a0f1d; }
+.lock-hearts { position: absolute; left: 50%; top: 45%; width: 0; height: 0; pointer-events: none; z-index: 1; }
+.lock-hearts i {
+  position: absolute; left: -10px; top: -12px; font-style: normal; font-size: 22px; line-height: 1; opacity: 0;
+  color: var(--glow-c); text-shadow: 0 0 8px color-mix(in srgb, var(--glow-c) 70%, transparent);
+  animation: lock-heart 1.1s cubic-bezier(.1, .7, .3, 1) forwards;
+}
+.lock-hearts i:nth-child(2n) { color: #fff0f7; font-size: 16px; }
+@keyframes lock-heart {
+  0% { opacity: 1; transform: rotate(var(--a)) translateX(10px) scale(.4); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(1.1); }
+}
+
+/* ---------- coin toss: a highlighted player's face is in their colour, with their GIF (js/common.js coinToss) ---------- */
+.face.glow-face { background: radial-gradient(circle at 35% 30%, #fff6fb, color-mix(in srgb, var(--glow-c) 75%, #fff) 55%, color-mix(in srgb, var(--glow-c) 70%, #5a1f3a)); box-shadow: inset 0 0 0 4px rgba(255,255,255,.45), inset 0 0 50px rgba(0,0,0,.2), 0 12px 40px rgba(0,0,0,.6), 0 0 40px color-mix(in srgb, var(--glow-c) 45%, transparent); }
+.face.glow-face > span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; max-height: 240px; }
+.coin-gif { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 4px #fff, 0 4px 14px rgba(0,0,0,.25); }
+.coin-name { font-family: 'Pacifico', cursive; font-weight: 400; text-transform: lowercase; color: #6b2141; line-height: 1.3; padding: 0 .2em .15em; white-space: nowrap; }
+.coin-name::first-letter { text-transform: uppercase; }
+.coin-caption .win .glow-name { animation: none; }
+
+/* ---------- soft sparkles drifting on a highlighted player's name plate (js/common.js applyGlow) ---------- */
+.plate-sparkles { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; z-index: 0; }
+.plate-sparkles i {
+  position: absolute; font-style: normal; line-height: 1; opacity: 0;
+  color: var(--glow-c); text-shadow: 0 0 6px color-mix(in srgb, var(--glow-c) 70%, transparent);
+  animation: plate-sparkle 4s ease-in-out infinite;
+}
+.plate-sparkles i:nth-child(3n) { color: #fff; text-shadow: 0 0 6px var(--glow-c); }
+.player.A .plate-sparkles i:nth-child(3n), .plate.A .plate-sparkles i:nth-child(3n) { color: color-mix(in srgb, var(--glow-c) 60%, #fff); }
+@keyframes plate-sparkle {
+  0% { opacity: 0; transform: translateY(6px) scale(.4) rotate(0); }
+  30% { opacity: .85; transform: translateY(0) scale(1) rotate(20deg); }
+  60% { opacity: .5; }
+  100% { opacity: 0; transform: translateY(-16px) scale(.5) rotate(60deg); }
+}
+.glow-plate > :not(.plate-sparkles) { position: relative; z-index: 1; }
+/* keep the plate / lock-in layers inside their own box, and the full-screen moments (coin, VS, draft complete) on top */
+.glow-plate, .glow-lock { isolation: isolate; }
+.coin-layer, .vs-layer, .done-layer { z-index: 20; }

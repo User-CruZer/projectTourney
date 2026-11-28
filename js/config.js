@@ -17,6 +17,17 @@ const WW_API_URL = 'https://script.google.com/macros/s/AKfycbzyAhdNhqwz0Pqp0Ra0G
 window.TOURNEY_CONFIG = {
   MODE,
   TITLE: 'HoloWastes',
+
+  // Players whose name glows on every overlay (bracket, draft, screens), in the colour given.
+  // Upper/lower case doesn't matter. Add more like:  'SHAN': '#4fd1ff',
+  PLAYER_GLOW: {
+    'MIAYAM': '#ff8fc4',   // soft pink
+  },
+  // A little picture/GIF for a player: shown in their bracket box, on their name plate and big in the
+  // VS intro (gone once they're knocked out). Put the file in img/player-gif/.
+  PLAYER_GIF: {
+    'MIAYAM': 'img/player-gif/miayam.gif?v=2',
+  },
   // Logo shown instead of the title text on every page. Remove this line to show TITLE as text.
   LOGO: 'img/logo.png',
 

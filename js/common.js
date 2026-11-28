@@ -21,6 +21,85 @@
   // Each name is probed once at load (webp, png, jpg); missing ones keep their initials.
   const IMG_DIR = cfg.IMG_DIR || 'img/resonator-img';
   const IMG_EXTS = ['webp', 'png', 'jpg'];
+  // Highlighted players (cfg.PLAYER_GLOW): their name glows in their colour on every overlay.
+  const glowOf = (name) => {
+    const g = cfg.PLAYER_GLOW || {}, n = String(name || '').trim().toUpperCase();
+    const k = n && Object.keys(g).find((x) => x.trim().toUpperCase() === n);
+    return k ? g[k] : '';
+  };
+  /** The name as HTML, wrapped in a glowing span if the player is highlighted. */
+  const glowName = (name) => {
+    const c = glowOf(name);
+    return c ? `<span class="glow-name" style="--glow-c:${esc(c)}">${esc(name)}</span>` : esc(name);
+  };
+  /** The player's GIF (cfg.PLAYER_GIF), or ''. */
+  const gifOf = (name) => {
+    const g = cfg.PLAYER_GIF || {}, n = String(name || '').trim().toUpperCase();
+    const k = n && Object.keys(g).find((x) => x.trim().toUpperCase() === n);
+    return k ? g[k] : '';
+  };
+  /** <img> for a player's GIF (removes itself if the file is missing), or ''. */
+  const gifImg = (name, cls) => {
+    const src = gifOf(name);
+    const c = glowOf(name);   // frame it in their glow colour
+    return src ? `<img class="${cls}" src="${esc(src)}" alt=""${c ? ` style="--glow-c:${esc(c)}"` : ''} onerror="this.remove()">` : '';
+  };
+
+  /**
+   * A highlighted player just locked in a pick/ban (the elements with .fresh): make that lock-in theirs,
+   * in their colour with "LOCKED IN ♡" and a little burst of hearts. Call right after the render.
+   */
+  function glowLock(s, freshIdx) {
+    const a = freshIdx >= 0 ? s.actions[freshIdx] : null;
+    const c = a ? glowOf(s.teams[a.team]) : '';
+    if (!c) return;
+    document.querySelectorAll('#stage .fresh').forEach((el) => {
+      el.classList.add('glow-lock');
+      el.style.setProperty('--glow-c', c);
+      let hearts = '';
+      for (let k = 0; k < 10; k++) {
+        const ang = (k / 10) * 360 + Math.random() * 20, d = 60 + Math.random() * 70;
+        hearts += `<i style="--a:${ang.toFixed(0)}deg;--d:${d.toFixed(0)}px;animation-delay:${(.15 + Math.random() * .2).toFixed(2)}s">♥</i>`;
+      }
+      el.insertAdjacentHTML('beforeend', `<span class="lock-hearts">${hearts}</span>`);
+    });
+  }
+
+  /** Turn the glow on/off on an element that shows one player's name. */
+  function applyGlow(el, name, off) {
+    const c = off ? '' : glowOf(name);
+    el.classList.toggle('glow-name', !!c);
+    if (c) el.style.setProperty('--glow-c', c); else el.style.removeProperty('--glow-c');
+    // the name plate around it glows too (pink border + tint), so it stands out on the white plate
+    const plate = el.closest('.player, .plate');
+    if (plate) {
+      plate.classList.toggle('glow-plate', !!c);
+      if (c) plate.style.setProperty('--glow-c', c); else plate.style.removeProperty('--glow-c');
+      // a few soft sparkles twinkle and drift on their plate (made once, so re-draws don't restart them)
+      let sp = plate.querySelector('.plate-sparkles');
+      if (!c) { if (sp) sp.remove(); }
+      else if (!sp) {
+        let html = '';
+        for (let k = 0; k < 9; k++) {
+          html += `<i style="left:${(4 + Math.random() * 92).toFixed(0)}%;top:${(12 + Math.random() * 70).toFixed(0)}%;` +
+            `font-size:${(9 + Math.random() * 9).toFixed(0)}px;animation-delay:${(Math.random() * 4).toFixed(2)}s;` +
+            `animation-duration:${(3.2 + Math.random() * 2.2).toFixed(2)}s">✦</i>`;
+        }
+        plate.insertAdjacentHTML('afterbegin', `<span class="plate-sparkles">${html}</span>`);
+      }
+      // their GIF sits on the plate, on the outer side of the name
+      const src = off ? '' : gifOf(name);
+      let gif = plate.querySelector('.plate-gif');
+      if (!src) { if (gif) gif.remove(); }
+      else if (!gif || gif.dataset.src !== src) {
+        if (gif) gif.remove();
+        el.insertAdjacentHTML(plate.classList.contains('B') ? 'afterend' : 'beforebegin', gifImg(name, 'plate-gif'));
+        gif = plate.querySelector('.plate-gif');
+        if (gif) gif.dataset.src = src;
+      }
+    }
+  }
+
   const slug = (name) => String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const portraits = {};                                   // name -> url (only found ones)
   const probe = (url) => new Promise((resolve) => {
@@ -264,7 +343,7 @@
       timers = [];
       el.innerHTML = `<div class="done-band"><div class="done-line"></div>
         <div class="done-title"><span>Draft</span> <b>Complete</b></div>
-        <div class="done-vs"><span class="A">${esc(s.teams.A)}</span><em>vs</em><span class="B">${esc(s.teams.B)}</span></div>
+        <div class="done-vs"><span class="A${glowOf(s.teams.A) ? ' roomy' : ''}">${glowName(s.teams.A)}</span><em>vs</em><span class="B${glowOf(s.teams.B) ? ' roomy' : ''}">${glowName(s.teams.B)}</span></div>
         <div class="done-line"></div></div>`;
       const WAIT = 1300;                       // let the last lock-in animation play first
       timers.push(setTimeout(() => {
@@ -315,8 +394,8 @@
       }
       const label = roundLabel(s);
       el.innerHTML = `
-        <div class="vs-side A"><span class="vs-name">${esc(s.teams.A)}</span></div>
-        <div class="vs-side B"><span class="vs-name">${esc(s.teams.B)}</span></div>
+        <div class="vs-side A"><div class="vs-stack">${gifImg(s.teams.A, 'vs-gif')}<span class="vs-name${glowOf(s.teams.A) ? ' roomy' : ''}">${glowName(s.teams.A)}</span></div></div>
+        <div class="vs-side B"><div class="vs-stack">${gifImg(s.teams.B, 'vs-gif')}<span class="vs-name${glowOf(s.teams.B) ? ' roomy' : ''}">${glowName(s.teams.B)}</span></div></div>
         <div class="vs-slash"></div>
         <div class="vs-mid">
           ${label ? `<div class="vs-kicker">${esc(label)}</div>` : ''}
@@ -355,13 +434,19 @@
 
     function play(s) {
       timers.forEach(clearTimeout);
-      $('coin-A').textContent = s.teams.A;
-      $('coin-B').textContent = s.teams.B;
+      // a highlighted player's side of the coin is in their colour, with their GIF above the name
+      ['A', 'B'].forEach((t) => {
+        const face = $('coin-' + t), c = glowOf(s.teams[t]);
+        face.parentElement.classList.toggle('glow-face', !!c);
+        if (c) face.parentElement.style.setProperty('--glow-c', c); else face.parentElement.style.removeProperty('--glow-c');
+        face.innerHTML = c ? `${gifImg(s.teams[t], 'coin-gif')}<span class="coin-name">${esc(s.teams[t])}</span>` : esc(s.teams[t]);
+      });
       cap.classList.remove('show');
-      cap.innerHTML = `<div class="win" style="color:var(--${s.firstTeam.toLowerCase()})">${esc(s.teams[s.firstTeam])} wins the toss</div><div class="sub">Picks &amp; bans first</div>`;
+      const winGlow = glowOf(s.teams[s.firstTeam]);   // a highlighted winner: their colour for the burst and the result
+      cap.innerHTML = `<div class="win" style="color:${winGlow || `var(--${s.firstTeam.toLowerCase()})`}">${winGlow ? glowName(s.teams[s.firstTeam]) : esc(s.teams[s.firstTeam])} wins the toss</div><div class="sub">Picks &amp; bans first</div>`;
       layer.hidden = false;
       layer.classList.remove('out', 'landed');
-      layer.style.setProperty('--wc', `var(--${s.firstTeam.toLowerCase()})`);   // the winner's colour
+      layer.style.setProperty('--wc', winGlow || `var(--${s.firstTeam.toLowerCase()})`);   // the winner's colour
       // sparks for the landing: random directions and distances
       let sp = '';
       for (let k = 0; k < 28; k++) {
@@ -375,8 +460,10 @@
       stage.classList.add('tossing');                           // the coin flies up and comes back down while it spins
       coin.style.setProperty('--end', (360 * 8 + (s.firstTeam === 'B' ? 180 : 0)) + 'deg');   // flips end over end (rotateX), lands on the winner's face
       coin.classList.add('spin');
-      fitText($('coin-A'), 42, 16, 3);
-      fitText($('coin-B'), 42, 16, 3);
+      ['A', 'B'].forEach((t) => {
+        const n = $('coin-' + t).querySelector('.coin-name');
+        if (n) fitText(n, 40, 16); else fitText($('coin-' + t), 42, 16, 3);
+      });
       fitText(cap.querySelector('.win'), 60, 28);
       timers.push(setTimeout(() => { layer.classList.add('landed'); cap.classList.add('show'); }, 2600));   // impact + result
       timers.push(setTimeout(() => layer.classList.add('out'), 6200));
@@ -458,5 +545,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro, glowOf, glowName, applyGlow, gifOf, gifImg, glowLock };
 })(window);

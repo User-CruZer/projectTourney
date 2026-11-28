@@ -248,3 +248,63 @@
 .live-panel.break.final .lp-clock.beat { animation: lp-beat .6s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes lp-beat { 0% { transform: scale(1.45); color: #fff; text-shadow: 0 0 40px rgba(229, 72, 77, 1); } 100% { transform: none; } }
 .live-panel.break.final.final-shake { animation: ban-shake .4s ease-out; }
+
+/* ---------- a highlighted player (cfg.PLAYER_GLOW) wins: their colour instead of gold, their GIF, falling hearts ---------- */
+.box.glow.just-won { animation: bk-won-glow 1.1s ease-out; }
+@keyframes bk-won-glow {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 var(--glow-c); }
+  30% { transform: scale(1.08); box-shadow: 0 0 0 4px var(--glow-c), 0 0 36px var(--glow-c); }
+  100% { transform: none; box-shadow: 0 0 10px color-mix(in srgb, var(--glow-c) 30%, transparent); }
+}
+.box.glow.arrive { animation: bk-arrive-glow .8s cubic-bezier(.2, 1.3, .4, 1) .9s both; }
+@keyframes bk-arrive-glow {
+  0% { opacity: 0; transform: translateX(-40px) scale(.9); }
+  60% { opacity: 1; box-shadow: 0 0 0 3px var(--glow-c), 0 0 30px var(--glow-c); }
+  100% { opacity: 1; transform: none; box-shadow: 0 0 10px color-mix(in srgb, var(--glow-c) 30%, transparent); }
+}
+.win-banner.glow-win {
+  border-color: var(--glow-c);
+  background: linear-gradient(180deg, rgba(12, 12, 12, .96), color-mix(in srgb, var(--glow-c) 16%, #0c0c0c));
+  box-shadow: 0 20px 80px rgba(0, 0, 0, .8), 0 0 60px color-mix(in srgb, var(--glow-c) 45%, transparent);
+}
+.win-banner.glow-win .wb-kicker, .win-banner.glow-win .wb-sub { color: color-mix(in srgb, var(--glow-c) 75%, #fff); }
+.win-banner.glow-win.champion { box-shadow: 0 20px 80px rgba(0, 0, 0, .8), 0 0 120px color-mix(in srgb, var(--glow-c) 60%, transparent); }
+.wb-gif { width: 150px; height: 150px; border-radius: 18px; object-fit: cover; margin: 4px 0; box-shadow: 0 0 0 3px var(--glow-c), 0 0 26px color-mix(in srgb, var(--glow-c) 45%, transparent); }
+.champion .wb-gif { width: 180px; height: 180px; }
+.win-banner.show .wb-gif { animation: vs-gif .75s cubic-bezier(.2, 1.4, .4, 1) .6s both; }
+.confetti.hearts b {
+  position: absolute; top: -40px; line-height: 1; opacity: 0; color: var(--glow-c);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--glow-c) 60%, transparent);
+  animation-name: confetti; animation-timing-function: cubic-bezier(.3, .6, .6, 1); animation-fill-mode: forwards;
+}
+.confetti.hearts b:nth-child(3n) { color: #fff0f7; }
+
+/* ---------- a highlighted player is knocked out: a soft goodbye instead of the shake (js/bracket.js render) ---------- */
+.box.soft-out { animation: soft-out 2.6s ease-out forwards; z-index: 2; }
+@keyframes soft-out {
+  0% { opacity: 1; border-color: var(--glow-c); box-shadow: 0 0 16px color-mix(in srgb, var(--glow-c) 45%, transparent); background: color-mix(in srgb, var(--glow-c) 16%, #141414); }
+  45% { opacity: 1; border-color: var(--glow-c); box-shadow: 0 0 10px color-mix(in srgb, var(--glow-c) 30%, transparent); }
+  100% { opacity: .4; box-shadow: 0 0 0 transparent; }
+}
+.box.soft-out .box-gif { animation: gif-grey 2.4s ease-in .4s forwards; }
+@keyframes gif-grey { to { filter: grayscale(1) brightness(.7); opacity: .55; } }
+.box.soft-out .nm { text-decoration-color: transparent; animation: soft-strike 2.6s forwards; }
+@keyframes soft-strike { 70% { text-decoration-color: transparent; } 100% { text-decoration-color: #6a6a6a; } }
+.gg-tag {
+  position: absolute; right: -10px; top: -16px; padding: 2px 10px; border-radius: 999px; pointer-events: none;
+  background: var(--glow-c); color: #3a1026; font-size: 14px; font-weight: 800; letter-spacing: .08em;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--glow-c) 60%, transparent);
+  animation: gg-tag 2.8s ease-out .2s both;
+}
+@keyframes gg-tag {
+  0% { opacity: 0; transform: translateY(8px) scale(.6); }
+  15% { opacity: 1; transform: translateY(-4px) scale(1.1); }
+  25% { transform: none; }
+  75% { opacity: 1; transform: translateY(-6px); }
+  100% { opacity: 0; transform: translateY(-22px); }
+}
+
+/* sparkles in a highlighted player's bracket box (same sparkle style as their name plate) */
+.box.glow { isolation: isolate; }
+.box.glow > .nm, .box.glow > .sc, .box.glow > .box-gif { position: relative; z-index: 1; }
+.box.glow .plate-sparkles { border-radius: 4px; }
