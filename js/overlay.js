@@ -103,6 +103,7 @@
   const coin = HW.coinToss();
   const draftDone = HW.draftComplete();   // DRAFT COMPLETE moment after the last lock-in
   const versus = HW.matchIntro();         // VS intro when a new match-up appears
+  const winner = HW.matchWinner();        // winner moment when the loaded match's result is set
 
   function onState(next) {
     state = next;
@@ -110,6 +111,7 @@
     coin(next, clockOffset);
     draftDone(next);
     versus(next);
+    winner(next);
     // Animate only an action that was just locked in (not old picks on page load).
     freshIdx = lastCount !== null && next.actions.length === lastCount + 1 ? next.actions.length - 1 : -1;
     lastCount = next.actions.length;

@@ -52,7 +52,7 @@ button, input, select { font: inherit; color: inherit; }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 540px; gap: 18px; padding: 16px 24px 28px; align-items: start; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
 .card h2 { margin: 0 0 14px; font-weight: 700; font-size: 14px; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
-.side { display: grid; gap: 18px; }
+.side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; min-width: 0; }   /* never wider than the screen (phones) */
 
 /* ---------- picker ---------- */
 .picker-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -118,7 +118,7 @@ button, input, select { font: inherit; color: inherit; }
 .lock-btn:disabled { opacity: .35; cursor: not-allowed; }
 
 /* ---------- preview ---------- */
-.preview-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.preview-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }   /* the switch drops under the title on phones */
 .preview-head h2 { margin: 0; }
 .seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--card-2); border: 1px solid var(--line); border-radius: 999px; }
 .seg button { border: 0; background: transparent; color: var(--muted); padding: 4px 14px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }

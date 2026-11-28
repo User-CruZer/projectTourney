@@ -482,3 +482,66 @@ span.glow-name { display: inline-block; }   /* so ::first-letter works on inline
 /* keep the plate / lock-in layers inside their own box, and the full-screen moments (coin, VS, draft complete) on top */
 .glow-plate, .glow-lock { isolation: isolate; }
 .coin-layer, .vs-layer, .done-layer { z-index: 20; }
+
+/* ---------- winner moment on the draft / screens overlays (js/common.js matchWinner) ---------- */
+.mw-layer {
+  position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  background: radial-gradient(ellipse at center, rgba(10, 10, 10, .82), rgba(0, 0, 0, .92));
+  pointer-events: none;
+}
+.mw-layer[hidden] { display: none; }
+.mw-layer.show { animation: fade-in .35s ease-out; }
+.mw-layer.out { animation: fade-out .55s ease-in forwards; }
+.mw-banner {
+  position: relative; width: 1100px; box-sizing: border-box; padding: 34px 50px 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  background: linear-gradient(180deg, rgba(14, 14, 14, .97), color-mix(in srgb, var(--wc) 14%, #0c0c0c));
+  border: 3px solid var(--wc); border-radius: 14px;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, .8), 0 0 80px color-mix(in srgb, var(--wc) 40%, transparent);
+}
+.show .mw-banner { animation: mw-pop .7s cubic-bezier(.2, 1.4, .4, 1) .15s both; }
+.out .mw-banner { animation: mw-out .5s ease-in forwards; }
+@keyframes mw-pop { 0% { opacity: 0; transform: scale(.55) translateY(40px); } 100% { opacity: 1; transform: none; } }
+@keyframes mw-out { to { opacity: 0; transform: scale(.85); } }
+.mw-kicker { font-size: 22px; font-weight: 800; letter-spacing: .32em; text-transform: uppercase; color: var(--gold); }
+.mw-name { max-width: 100%; font-size: 96px; font-weight: 800; line-height: 1; text-transform: uppercase; white-space: nowrap; overflow: hidden; color: var(--wc); text-shadow: 0 0 34px color-mix(in srgb, var(--wc) 45%, transparent); }
+.show .mw-name { animation: wb-name-mw .9s cubic-bezier(.2, 1.4, .4, 1) .45s both; }
+@keyframes wb-name-mw { 0% { opacity: 0; letter-spacing: .4em; filter: blur(6px); } 100% { opacity: 1; letter-spacing: normal; filter: none; } }
+.mw-score { display: flex; align-items: baseline; gap: 18px; font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); }
+.mw-score em { font-style: normal; font-size: 28px; }
+.mw-score .won { color: var(--gold); }
+.show .mw-score { animation: lock-name .5s ease-out .8s both; }
+.mw-sub { font-size: 22px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.show .mw-sub { animation: lock-name .5s ease-out .95s both; }
+.mw-trophy { font-size: 84px; line-height: 1; filter: drop-shadow(0 0 20px rgba(232, 197, 71, .8)); }
+.show .mw-trophy { animation: mw-trophy 1.2s cubic-bezier(.2, 1.6, .4, 1) .5s both; }
+@keyframes mw-trophy { 0% { opacity: 0; transform: translateY(-90px) rotate(-30deg) scale(.5); } 100% { opacity: 1; transform: none; } }
+.mw-layer.champion .mw-banner { border-color: var(--gold); box-shadow: 0 24px 90px rgba(0, 0, 0, .8), 0 0 130px rgba(232, 197, 71, .55); }
+.mw-layer.champion .mw-name { font-size: 120px; }
+.mw-layer.champion .mw-sub { font-size: 32px; letter-spacing: .5em; color: var(--gold); }
+.mw-layer.glow-win .mw-sub, .mw-layer.glow-win .mw-kicker { color: color-mix(in srgb, var(--wc) 75%, #fff); }
+.mw-gif { width: 170px; height: 170px; border-radius: 20px; object-fit: cover; box-shadow: 0 0 0 3px var(--wc), 0 0 26px color-mix(in srgb, var(--wc) 45%, transparent); }
+.show .mw-gif { animation: vs-gif .75s cubic-bezier(.2, 1.4, .4, 1) .4s both; }
+/* burst of sparks from the banner */
+.mw-sparks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.mw-sparks i {
+  position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; opacity: 0;
+  background: var(--wc); box-shadow: 0 0 14px var(--wc), 0 0 4px #fff;
+}
+.mw-sparks i:nth-child(3n) { background: var(--gold); box-shadow: 0 0 14px var(--gold); width: 9px; height: 9px; }
+.show .mw-sparks i { animation: mw-spark 1.2s cubic-bezier(.1, .7, .3, 1) forwards; }
+@keyframes mw-spark { 0% { opacity: 1; transform: rotate(var(--a)) translateX(300px) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(calc(300px + var(--d))) scale(.3); } }
+/* confetti (final) / hearts (highlighted players) falling */
+.mw-rain { position: absolute; inset: 0; pointer-events: none; }
+.mw-rain i, .mw-rain b {
+  position: absolute; top: -40px; opacity: 0;
+  animation-name: confetti; animation-timing-function: cubic-bezier(.3, .6, .6, 1); animation-fill-mode: forwards;
+}
+.mw-rain i { width: 12px; height: 20px; border-radius: 2px; }
+.mw-rain i:nth-child(3n) { width: 9px; height: 9px; border-radius: 50%; }
+.mw-rain b { line-height: 1; text-shadow: 0 0 10px currentColor; }
+@keyframes confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), 1140px) rotate(var(--rot)); }
+}

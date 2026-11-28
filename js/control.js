@@ -466,7 +466,8 @@
       const ta = BK.total(s.scores.A), tb = BK.total(s.scores.B);
       let hint = '', ok = false;
       if (ta === null || tb === null) hint = 'Enter and save both stage scores for both players first.';
-      else if (ta === tb) hint = `Tied ${fmt(ta)} – ${fmt(tb)}: use Top/Bottom wins below.`;
+      else if (HOLO && ta === 0 && tb === 0) hint = 'Tick the boss points first (Points, further down).';
+      else if (ta === tb) hint = `Tied ${fmt(ta)} – ${fmt(tb)}: pick the winner with "${pp[0]} wins" or "${pp[1]} wins" below.`;
       else { ok = true; hint = `${fmt(ta)} – ${fmt(tb)} → ${ta > tb ? s.teams.A : s.teams.B} advances`; }
       confirm.disabled = !ok || busy;
       if (!confirm.dataset.armed) confirm.textContent = ok ? `Confirm: ${ta > tb ? s.teams.A : s.teams.B} wins` : 'Confirm winner';

@@ -383,6 +383,7 @@
       return `${(cfg.ROUND_NAMES || [])[p.r] || 'Round ' + (p.r + 1)} · M${p.i + 1}`;
     }
     function play(s) {
+      dismissLayer('mw-layer');   // the previous match's winner banner gives way to the new match-up
       let el = $('vs-layer');
       if (!el) { $('stage').insertAdjacentHTML('beforeend', '<div class="vs-layer" id="vs-layer" hidden></div>'); el = $('vs-layer'); }
       timers.forEach(clearTimeout);
@@ -413,6 +414,82 @@
     return function update(s) {
       const key = s.teams.A + '|' + s.teams.B;
       if (prev !== null && key !== prev && s.teams.A && s.teams.B) play(s);
+      prev = key;
+    };
+  }
+
+  /**
+   * Winner moment on the draft / screens overlays: when the loaded bracket match gets its result
+   * (Confirm winner / "[Name] wins"), a banner with the winner, the score and where they advance to,
+   * a burst in their colour, and for the final a trophy + confetti. Not on page load.
+   * Returns update(state); call it with every new state.
+   */
+  /** Hide a full-screen moment layer right away (a newer moment replaces it, so they never cover each other). */
+  function dismissLayer(id) {
+    const el = document.getElementById(id);
+    if (el && !el.hidden) { el.hidden = true; el.classList.remove('show', 'out'); }
+  }
+
+  function matchWinner() {
+    const $ = (id) => document.getElementById(id);
+    let prev = null;
+    let timer = null;
+    function play(s, b, p, res) {
+      const B = global.BracketCore;
+      const names = B.participants(b, p.r, p.i);
+      const name = names[res.w === 'A' ? 0 : 1];
+      if (!name) return;
+      const rounds = cfg.ROUND_NAMES || [];
+      const final = p.r === B.ROUNDS - 1;
+      const glowC = glowOf(name);
+      const color = glowC || (res.w === 'A' ? 'var(--a)' : 'var(--b)');
+      const fmt = (v) => (v === null || v === undefined || v === '' ? '' : scoreTotal([v]) || String(v));
+      const sa = fmt(res.sa), sb = fmt(res.sb);
+      dismissLayer('vs-layer');   // a VS intro still showing gives way to the result
+      let el = $('mw-layer');
+      if (!el) { $('stage').insertAdjacentHTML('beforeend', '<div class="mw-layer" id="mw-layer" hidden></div>'); el = $('mw-layer'); }
+      let sparks = '';
+      for (let k = 0; k < 28; k++) {
+        const a = (k / 28) * 360 + Math.random() * 12, d = 260 + Math.random() * 260;
+        sparks += `<i style="--a:${a.toFixed(0)}deg;--d:${d.toFixed(0)}px;animation-delay:${(.45 + Math.random() * .15).toFixed(2)}s"></i>`;
+      }
+      let rain = '';
+      if (final || glowC) {
+        for (let k = 0; k < (final ? 90 : 40); k++) {
+          const heart = glowC && (!final || k % 3 === 0);
+          const hue = glowC ? [glowC, '#fff0f7', 'var(--gold)'][k % 3] : ['var(--gold)', '#fff6d6', '#f2f2f2', '#c9a227', 'var(--b)'][k % 5];
+          const common = `left:${Math.random() * 100}%;animation-delay:${(.6 + Math.random() * 1.4).toFixed(2)}s;animation-duration:${(2.8 + Math.random() * 2).toFixed(2)}s;--rot:${Math.round(Math.random() * 720 - 360)}deg;--dx:${Math.round(Math.random() * 160 - 80)}px`;
+          rain += heart ? `<b style="${common};color:${hue};font-size:${Math.round(18 + Math.random() * 28)}px">♥</b>` : `<i style="${common};background:${hue}"></i>`;
+        }
+      }
+      el.className = 'mw-layer' + (final ? ' champion' : '') + (glowC ? ' glow-win' : '');
+      el.style.setProperty('--wc', color);
+      el.innerHTML = `
+        ${rain ? `<div class="mw-rain">${rain}</div>` : ''}
+        <div class="mw-banner">
+          <div class="mw-sparks">${sparks}</div>
+          <div class="mw-kicker">${esc(rounds[p.r] || 'Round ' + (p.r + 1))} · M${p.i + 1}</div>
+          ${final ? '<div class="mw-trophy">🏆</div>' : ''}
+          ${glowC ? gifImg(name, 'mw-gif') : ''}
+          <div class="mw-name${glowC ? ' roomy' : ''}">${glowName(name)}</div>
+          ${sa !== '' && sb !== '' ? `<div class="mw-score"><span class="${res.w === 'A' ? 'won' : ''}">${esc(sa)}</span><em>–</em><span class="${res.w === 'B' ? 'won' : ''}">${esc(sb)}</span></div>` : ''}
+          <div class="mw-sub">${final ? 'Champion' : 'Wins · advances to ' + esc(rounds[p.r + 1] || 'the next round')}</div>
+        </div>`;
+      el.hidden = false;
+      el.classList.remove('show', 'out'); void el.offsetWidth; el.classList.add('show');
+      fitText(el.querySelector('.mw-name'), final ? 120 : 96, 40);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        el.classList.add('out');
+        timer = setTimeout(() => { el.hidden = true; el.classList.remove('show', 'out'); }, 600);
+      }, final ? 7500 : 5000);
+    }
+    return function update(s) {
+      const b = s.bracket, B = global.BracketCore;
+      const p = b && b.current && B ? B.parse(b.current) : null;
+      const res = p ? (b.results || {})[b.current] : null;
+      const key = p ? b.current + ':' + (res ? res.w : '') : '';
+      if (prev !== null && key !== prev && res && p) play(s, b, p, res);
       prev = key;
     };
   }
@@ -545,5 +622,5 @@
     if (document.body.classList.contains('control')) document.body.style.paddingTop = '38px';
   }
 
-  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro, glowOf, glowName, applyGlow, gifOf, gifImg, glowLock };
+  global.HW = { cfg, byName, esc, initials, element, elColor, scoreTotal, timerText, clock, fitText, fitCanvas, backdrop, brand, coinToss, slug, portrait, imagesReady, IMG_DIR, bossImg, bossSpinner, scoreWatcher, draftComplete, matchIntro, glowOf, glowName, applyGlow, gifOf, gifImg, glowLock, matchWinner };
 })(window);

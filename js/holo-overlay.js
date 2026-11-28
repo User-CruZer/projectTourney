@@ -108,12 +108,14 @@
   const coin = HW.coinToss();
   const draftDone = HW.draftComplete();   // DRAFT COMPLETE moment after the last lock-in
   const versus = HW.matchIntro();         // VS intro when a new match-up appears
+  const winner = HW.matchWinner();        // winner moment when the loaded match's result is set
   backend.subscribe((next) => {
     state = next;
     if (next.now) clockOffset = next.now - Date.now();
     coin(next, clockOffset);
     draftDone(next);
     versus(next);
+    winner(next);
     spin.update(next.bosses);
     gained = gainedPoints(lastScores, next.scores);
     lastScores = next.scores;
